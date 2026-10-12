@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRACTURE — 시간의 균열</title>
+<link rel="stylesheet" href="fracture.css">
+</head>
+<body>
+
+<div id="game-root">
+
+<!-- ══ TITLE ══ -->
+<div id="title-screen">
+  <div class="title-scan"></div>
+  <div class="title-glitch" data-text="FRACTURE">FRACTURE</div>
+  <div class="title-sub">시간의 균열 · 탈출 어드벤처</div>
+  <div class="title-story">
+    알 수 없는 힘이 당신을 네 개의 차원에 가뒀다.<br>
+    <em>고대 신전 → 우주 정거장 → 마법사 저택 → 탐정 사무소.</em><br>
+    각 세계에 숨겨진 퍼즐을 풀고, 시간의 균열을 봉합하라.<br>
+    탈출하지 않으면 모든 차원이 붕괴한다.
+  </div>
+  <div class="stage-list">
+    <div class="stage-pip on">I · 신전</div>
+    <div class="stage-pip on">II · 우주</div>
+    <div class="stage-pip on">III · 저택</div>
+    <div class="stage-pip on">IV · 사무소</div>
+  </div>
+  <!-- 난이도 선택 -->
+  <div class="difficulty-selector">
+    <div class="diff-label">난이도</div>
+    <div class="diff-btns">
+      <button class="diff-btn" data-diff="easy"   onclick="selectDifficulty('easy')">쉬움<span>힌트 5회</span></button>
+      <button class="diff-btn active" data-diff="normal" onclick="selectDifficulty('normal')">보통<span>힌트 3회</span></button>
+      <button class="diff-btn" data-diff="hard"   onclick="selectDifficulty('hard')">어려움<span>힌트 1회</span></button>
+    </div>
+  </div>
+  <button class="title-start" onclick="Game.start()">[ 탈출 시작 ]</button>
+  <button id="btn-continue" class="title-continue" onclick="Game.continueGame()" style="display:none">[ 이어하기 ]</button>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="game-wrap">
+
+  <!-- HUD -->
+  <div id="hud">
+    <div>
+      <div class="hud-stage" id="hud-stage">STAGE I</div>
+      <div class="hud-title" id="hud-title">고대 신전 — 봉인의 방</div>
+    </div>
+    <div class="hud-sep"></div>
+    <div class="hud-progress" id="hud-progress"></div>
+    <div class="hud-timer" id="hud-timer">00:00</div>
+    <button id="hint-req-btn" onclick="HintRequest.use(Store.state.stage)">? 힌트 [3]</button>
+  </div>
+
+  <!-- SCENES -->
+  <!-- TEMPLE -->
+  <div id="scene-temple" class="scene active">
+    <div class="room-3d" aria-hidden="true"><div class="r3d-l"></div><div class="r3d-r"></div><div class="r3d-f"></div><div class="r3d-c"></div></div>
+    <!-- 거미줄 소품 -->
+    <svg class="temple-cobweb" style="top:0;left:0" viewBox="0 0 90 70"><line x1="0" y1="0" x2="90" y2="70" stroke="#c8b090" stroke-width="1"/><line x1="0" y1="0" x2="50" y2="70" stroke="#c8b090" stroke-width="1"/><line x1="0" y1="0" x2="15" y2="70" stroke="#c8b090" stroke-width="1"/><path d="M6,16 Q45,10 82,22" fill="none" stroke="#c8b090" stroke-width="0.8"/><path d="M3,34 Q40,26 72,38" fill="none" stroke="#c8b090" stroke-width="0.8"/><path d="M1,52 Q32,42 60,56" fill="none" stroke="#c8b090" stroke-width="0.8"/></svg>
+    <svg class="temple-cobweb" style="top:0;right:0;transform:scaleX(-1)" viewBox="0 0 90 70"><line x1="0" y1="0" x2="90" y2="70" stroke="#c8b090" stroke-width="1"/><line x1="0" y1="0" x2="50" y2="70" stroke="#c8b090" stroke-width="1"/><path d="M6,16 Q45,10 82,22" fill="none" stroke="#c8b090" stroke-width="0.8"/><path d="M3,34 Q40,26 72,38" fill="none" stroke="#c8b090" stroke-width="0.8"/></svg>
+    <!-- Columns -->
+    <div class="temple-column" style="left:8%; height:340px;"></div>
+    <div class="temple-column" style="left:15%; height:280px;"></div>
+    <div class="temple-column" style="right:8%; height:340px;"></div>
+    <div class="temple-column" style="right:15%; height:280px;"></div>
+    <div class="temple-floor"></div>
+    <!-- 제단 발판 -->
+    <div class="temple-step" style="width:160px;height:10px;bottom:70px;"></div>
+    <div class="temple-step" style="width:130px;height:8px;bottom:78px;"></div>
+    <!-- Torches -->
+    <div class="temple-torch" style="left:22%">
+      <div class="torch-flame"></div><div class="torch-body"></div>
+    </div>
+    <div class="temple-torch" style="right:22%">
+      <div class="torch-flame"></div><div class="torch-body"></div>
+    </div>
+    <!-- 횃불 추가 -->
+    <div class="temple-torch" style="left:35%">
+      <div class="torch-flame"></div><div class="torch-body"></div>
+    </div>
+    <div class="temple-torch" style="right:35%">
+      <div class="torch-flame"></div><div class="torch-body"></div>
+    </div>
+    <!-- 석상 좌우 -->
+    <div class="temple-statue" style="left:28%">
+      <div class="temple-statue-head"></div>
+      <div class="temple-statue-body"></div>
+      <div class="temple-statue-base"></div>
+    </div>
+    <div class="temple-statue" style="right:28%">
+      <div class="temple-statue-head"></div>
+      <div class="temple-statue-body"></div>
+      <div class="temple-statue-base"></div>
+    </div>
+    <!-- 항아리 -->
+    <div class="temple-urn" style="bottom:72px; left:38%; height:36px;"></div>
+    <div class="temple-urn" style="bottom:72px; right:40%; height:28px;"></div>
+    <div class="temple-urn" style="bottom:72px; left:25%; height:40px;"></div>
+    <!-- 체인 장식 -->
+    <div class="temple-chain" style="top:20px; left:10%;"></div>
+    <div class="temple-chain" style="top:20px; right:10%;"></div>
+    <!-- 바닥 균열 SVG -->
+    <svg class="floor-crack" style="left:42%; width:80px;" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" pointer-events="none">
+      <path d="M20,0 L28,12 L18,18 L30,40" stroke="#5d4000" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <path d="M50,5 L44,20 L54,28 L48,40" stroke="#5d4000" stroke-width="1" fill="none" opacity="0.4"/>
+    </svg>
+    <!-- ★ 한자 해독 메모 — 석판 근처 벽에 붙어있는 낡은 메모 -->
+    <div class="wall-note torn obj" id="obj-hanzi-note"
+         style="bottom:155px; right:290px; transform:rotate(2.5deg); width:50px; height:58px;"
+         title="낡은 메모 조사">
+      <div class="note-fold-lines">
+        <div class="note-fold"></div>
+        <div class="note-fold"></div>
+        <div class="note-fold"></div>
+      </div>
+      <div class="note-icon note-icon-pad">
+        <div class="ni-line"></div>
+        <div class="ni-line"></div>
+        <div class="ni-line short"></div>
+      </div>
+    </div>
+    <!-- ★ 간접 힌트: 바닥 석판 문자 — 숫자를 암호처럼 새겨둠 -->
+    <div class="floor-inscription" id="obj-floor-stone" style="bottom:74px; left:calc(50% + 70px); color:#8b6000; font-size:0.7rem;"
+         title="바닥 석판 조사">
+      ☉ · ☽ · ∞ · 骨
+    </div>
+    <!-- ★ 간접 힌트: 벽 낡은 메모지 (탐험가의 노트) — 내용은 클릭 후 팝업 -->
+    <div class="wall-note torn obj" id="obj-explorer-note" style="top:258px; left:240px; transform:rotate(-3deg); width:52px; height:60px;"
+         title="낡은 메모 조사">
+      <div class="note-fold-lines">
+        <div class="note-fold"></div>
+        <div class="note-fold"></div>
+        <div class="note-fold"></div>
+      </div>
+      <div class="note-icon note-icon-scroll">
+        <div class="ni-roll"></div>
+        <div class="ni-body">
+          <div class="ni-body-line"></div>
+          <div class="ni-body-line"></div>
+        </div>
+        <div class="ni-roll"></div>
+      </div>
+    </div>
+    <!-- Objects -->
+    <div class="obj" id="obj-mural" title="벽화 조사">
+      <div class="mural-inner">
+        <div class="mural-glyph" id="mural-g0"></div>
+        <div class="mural-glyph" id="mural-g1"></div>
+        <div class="mural-glyph" id="mural-g2"></div>
+        <div class="mural-glyph" id="mural-g3"></div>
+      </div>
+      <div class="mural-label">고대 벽화</div>
+    </div>
+    <div class="obj" id="obj-skull" title="해골 조사">
+      <div class="css-skull">
+        <div class="sk-head">
+          <div class="sk-eye-l"></div>
+          <div class="sk-eye-r"></div>
+          <div class="sk-nose"></div>
+        </div>
+        <div class="sk-jaw">
+          <div class="sk-teeth">
+            <div class="sk-tooth"></div>
+            <div class="sk-tooth"></div>
+            <div class="sk-tooth"></div>
+            <div class="sk-tooth"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="obj" id="obj-pedestal" title="제단 조사">
+      <div class="pedestal-top">
+        <div class="dial-mini">0</div><div class="dial-mini">0</div>
+        <div class="dial-mini">0</div><div class="dial-mini">0</div>
+      </div>
+      <div class="pedestal-body"></div>
+    </div>
+    <div class="obj" id="obj-door-temple" title="돌문 조사">
+      <div class="door-arch"></div>
+      <div class="door-frame"></div>
+      <div class="door-gear-slot">
+        <svg width="18" height="18" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9.1,1 L12.9,1 L13.5,3.6 C14.4,3.9 15.2,4.4 15.9,5.0 L18.4,4.1 L21.0,6.9 L19.4,9.0 C19.6,9.6 19.7,10.3 19.7,11 C19.7,11.7 19.6,12.4 19.4,13.0 L21.0,15.1 L18.4,17.9 L15.9,17.0 C15.2,17.6 14.4,18.1 13.5,18.4 L12.9,21 L9.1,21 L8.5,18.4 C7.6,18.1 6.8,17.6 6.1,17.0 L3.6,17.9 L1.0,15.1 L2.6,13.0 C2.4,12.4 2.3,11.7 2.3,11 C2.3,10.3 2.4,9.6 2.6,9.0 L1.0,6.9 L3.6,4.1 L6.1,5.0 C6.8,4.4 7.6,3.9 8.5,3.6 Z M11,7.5 A3.5,3.5 0 1 0 11,14.5 A3.5,3.5 0 0 0 11,7.5 Z" fill="#7a5818" opacity="0.7"/>
+        </svg>
+      </div>
+    </div>
+    <!-- ★ 스토리: 돌 비석 -->
+    <div class="obj" id="obj-stone-tablet" title="돌 비석 조사">
+      <div class="tablet-face">
+        <div class="tablet-carving">
+          <div class="tablet-carving-line"></div>
+          <div class="tablet-carving-line" style="width:70%;margin:0 auto;"></div>
+          <div class="tablet-carving-line"></div>
+          <div class="tablet-carving-line" style="width:55%;margin:0 auto;"></div>
+          <div class="tablet-carving-line"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPACE -->
+  <div id="scene-space" class="scene">
+    <div class="room-3d" aria-hidden="true"><div class="r3d-l"></div><div class="r3d-r"></div><div class="r3d-f"></div><div class="r3d-c"></div></div>
+    <div class="metal-grid"></div>
+    <div id="space-stars"></div>
+    <div class="space-floor"></div>
+    <div class="space-grid"></div>
+    <!-- 배관 파이프 -->
+    <div class="space-pipe" style="position:absolute;top:60px;left:0;right:0;height:8px;"></div>
+    <div class="space-pipe" style="position:absolute;top:120px;left:0;width:30%;height:6px;"></div>
+    <div class="space-pipe-v" style="position:absolute;top:60px;left:30%;width:6px;height:60px;"></div>
+    <div class="space-pipe" style="position:absolute;bottom:160px;right:0;width:25%;height:8px;"></div>
+    <!-- 경고 패널 (소품) -->
+    <div class="warning-panel" style="position:absolute;top:70px;left:40px;width:60px;height:30px;">
+      <div class="warning-stripe"></div>
+    </div>
+    <div class="warning-panel" style="position:absolute;top:70px;right:180px;width:40px;height:24px;">
+      <div class="warning-stripe"></div>
+    </div>
+    <!-- 산소통 — 사물함 오른쪽 -->
+    <div class="oxygen-tank" style="position:absolute;bottom:102px;left:148px;"></div>
+    <div class="oxygen-tank" style="position:absolute;bottom:102px;left:174px;height:40px;"></div>
+    <!-- 케이블 묶음 -->
+    <div class="cable-bundle" style="position:absolute;top:68px;left:0;width:60%;"></div>
+    <div class="cable-bundle" style="position:absolute;top:130px;right:0;width:40%;background:repeating-linear-gradient(90deg,rgba(183,28,28,0.3) 0,rgba(183,28,28,0.3) 4px,#001820 4px,#001820 8px);"></div>
+    <!-- 서브 모니터 — 에어록 왼쪽 -->
+    <div class="sub-monitor" style="position:absolute;bottom:102px;right:180px;width:70px;height:50px;">
+      <div class="sub-monitor-screen">HULL: 34%<br>ATM: FAIL<br>PWR: ERR</div>
+    </div>
+    <!-- 의자 — 콘솔 오른쪽 -->
+    <div class="space-chair" style="left:calc(50% + 120px)">
+      <div class="space-chair-back"></div>
+      <div class="space-chair-seat"></div>
+      <div style="display:flex;justify-content:space-between;width:44px;">
+        <span class="space-chair-leg"></span>
+        <span class="space-chair-leg"></span>
+      </div>
+    </div>
+    <!-- ★ 간접 힌트: 벽 스티커 메모 — 내용은 클릭 후 팝업 -->
+    <div class="space-sticker obj" id="obj-wall-sticker" style="top:242px;left:38%;transform:rotate(-2deg);width:44px;height:48px;"
+         title="스티커 메모 조사">
+      <div class="sticker-lines">
+        <div class="sticker-line"></div>
+        <div class="sticker-line"></div>
+        <div class="sticker-line short"></div>
+      </div>
+    </div>
+    <!-- ★ 간접 힌트: 바닥 스티커 메모 2 — 내용은 클릭 후 팝업 -->
+    <div class="space-sticker obj" id="obj-floor-sticker" style="bottom:295px;right:255px;transform:rotate(3deg);width:40px;height:44px;"
+         title="바닥 메모 조사">
+      <div class="sticker-lines">
+        <div class="sticker-line"></div>
+        <div class="sticker-line short"></div>
+        <div class="sticker-line"></div>
+      </div>
+    </div>
+    <div class="obj" id="obj-sparks" title="파손된 패널">
+      <div class="css-sparks">
+        <svg class="spark-bolt" viewBox="0 0 34 52" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="21,0 34,0 16,28 26,28 13,52 0,52 18,26 8,26" fill="#ffb300" filter="url(#sg)"/>
+          <defs><filter id="sg"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        </svg>
+        <div class="spark-dot"></div>
+        <div class="spark-dot"></div>
+        <div class="spark-dot"></div>
+        <div class="spark-dot"></div>
+      </div>
+    </div>
+    <div class="obj" id="obj-locker" title="비상 사물함">
+      <div class="locker-body">
+        <div class="locker-label">LOCKER<br>E-09</div>
+        <div class="locker-handle"></div>
+        <div class="locker-vent">
+          <div class="locker-vent-line"></div>
+          <div class="locker-vent-line"></div>
+          <div class="locker-vent-line"></div>
+        </div>
+      </div>
+    </div>
+    <div class="obj" id="obj-console" title="메인 콘솔">
+      <div class="console-body">
+        <div class="console-screen">
+          <div class="console-scan-line"></div>
+          <div class="console-text">ERR::BREACH</div>
+        </div>
+        <div class="console-buttons">
+          <div class="console-btn blink"></div>
+          <div class="console-btn"></div>
+          <div class="console-btn blink"></div>
+        </div>
+      </div>
+    </div>
+    <div class="obj" id="obj-airlock" title="에어록">
+      <div class="airlock-outer">
+        <div class="airlock-light" id="airlock-light"></div>
+        <div class="airlock-inner">
+          <div class="airlock-wheel"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ★ 스토리: 데이터패드 -->
+    <div class="obj" id="obj-datapad" title="데이터패드 조사">
+      <div class="datapad-body">
+        <div class="datapad-screen">
+          <div class="datapad-glow"></div>
+          <div class="datapad-text">LOG<br>8%</div>
+        </div>
+        <div class="datapad-btn-row">
+          <div class="datapad-btn"></div>
+          <div class="datapad-btn"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 압력 게이지 소품 -->
+    <div class="space-gauge" style="position:absolute;top:92px;right:200px;width:38px;height:38px;">
+      <div class="gauge-ring">
+        <div class="gauge-needle"></div>
+        <div class="gauge-label">ATM</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANSION -->
+  <div id="scene-mansion" class="scene">
+    <div class="room-3d" aria-hidden="true"><div class="r3d-l"></div><div class="r3d-r"></div><div class="r3d-f"></div><div class="r3d-c"></div></div>
+    <div class="mansion-pattern"></div>
+    <!-- 양초 소품 -->
+    <div class="mansion-candle-extra" style="position:absolute;bottom:120px;left:29%"><div class="flame"></div><div class="wax"></div></div>
+    <div class="mansion-candle-extra" style="position:absolute;bottom:120px;left:33%"><div class="flame"></div><div class="wax" style="height:28px"></div></div>
+    <div class="mansion-candle-extra" style="position:absolute;bottom:120px;left:37%"><div class="flame"></div><div class="wax"></div></div>
+    <div class="mansion-candle-extra" style="position:absolute;bottom:120px;left:42%"><div class="flame"></div><div class="wax" style="height:32px"></div></div>
+    <div class="mansion-wall-pattern"></div>
+    <div class="mansion-floor"></div>
+    <!-- 카펫 -->
+    <div class="mansion-rug" style="width:300px;"></div>
+    <!-- 책장 -->
+    <div class="bookshelf" style="left:5%;width:70px;height:160px;">
+      <div class="shelf-row" style="height:30px;">
+        <div class="shelf-book" style="width:8px;height:24px;--c:#2a0a44;"></div>
+        <div class="shelf-book" style="width:6px;height:20px;--c:#1a0630;"></div>
+        <div class="shelf-book" style="width:10px;height:26px;--c:#3a0a60;"></div>
+        <div class="shelf-book" style="width:7px;height:22px;--c:#0d0420;"></div>
+        <div class="shelf-book" style="width:9px;height:25px;--c:#2a0050;"></div>
+      </div>
+      <div class="shelf-row" style="height:30px;">
+        <div class="shelf-book" style="width:11px;height:26px;--c:#1a0630;"></div>
+        <div class="shelf-book" style="width:7px;height:20px;--c:#3a1060;"></div>
+        <div class="shelf-book" style="width:8px;height:24px;--c:#200840;"></div>
+        <div class="shelf-book" style="width:6px;height:18px;--c:#2a0a44;"></div>
+      </div>
+      <div class="shelf-row" style="height:30px;">
+        <div class="shelf-book" style="width:9px;height:22px;--c:#3a0a60;"></div>
+        <div class="shelf-book" style="width:8px;height:26px;--c:#1a0630;"></div>
+        <div class="shelf-book" style="width:7px;height:20px;--c:#0d0420;"></div>
+      </div>
+    </div>
+    <!-- 괘종시계 -->
+    <div class="grandfather-clock" style="right:22%;">
+      <div class="clock-top"></div>
+      <div class="clock-body">
+        <div class="clock-face">
+          <div class="clock-hand" id="clock-minute" style="height:9px;transform:rotate(120deg);"></div>
+          <div class="clock-hand" id="clock-hour" style="height:6px;transform:rotate(60deg);"></div>
+        </div>
+      </div>
+      <div class="clock-base"></div>
+    </div>
+    <!-- 포션 병들 (책장 위) -->
+    <div class="potion-bottle" style="position:absolute;bottom:290px;left:5.5%;background:rgba(80,20,160,0.4);"></div>
+    <div class="potion-bottle" style="position:absolute;bottom:290px;left:7.5%;background:rgba(0,160,80,0.4);height:22px;"></div>
+    <div class="potion-bottle" style="position:absolute;bottom:290px;left:9.5%;background:rgba(180,60,0,0.4);height:18px;"></div>
+    <!-- ★ 간접 힌트: 두루마리 (클릭하면 암호 힌트) -->
+    <div class="scroll-prop" id="obj-scroll" style="bottom:200px;right:260px;" title="두루마리 조사"></div>
+    <!-- Objects -->
+    <div class="obj" id="obj-mirror" title="마법 거울">
+      <div class="mirror-frame">
+        <div class="mirror-glow"></div>
+        <div class="mirror-runes">ᚱᚢᚾ</div>
+      </div>
+    </div>
+    <div class="obj" id="obj-spellbook" title="마법서">
+      <div class="book-body">
+        <div class="book-spine"></div>
+        <div class="book-clasp"></div>
+        <div class="book-rune">
+          <div class="rune-symbol">☽</div>
+          <div class="rune-lines">
+            <div class="rune-line"></div>
+            <div class="rune-line"></div>
+            <div class="rune-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="obj" id="obj-ritual-table" title="제단 테이블">
+      <div class="ritual-table-top"></div>
+      <div class="ritual-table-leg" style="left:10px"></div>
+      <div class="ritual-table-leg" style="right:10px"></div>
+      <div class="ritual-candle" style="left:20px"></div>
+      <div class="ritual-candle" style="left:55px"></div>
+      <div class="ritual-candle" style="right:12px"></div>
+    </div>
+    <div class="obj" id="obj-crystals" title="수정 군집">
+      <div class="crystal crystal-1"><div class="crystal-gem"></div></div>
+      <div class="crystal crystal-2"><div class="crystal-gem"></div></div>
+      <div class="crystal crystal-3"><div class="crystal-gem"></div></div>
+    </div>
+    <div class="obj" id="obj-secret-door" title="비밀 문">
+      <div class="sdoor-frame">
+        <div class="sdoor-crack"></div>
+        <div class="sdoor-rune">⚝</div>
+      </div>
+    </div>
+    <!-- ★ 스토리: 초상화 -->
+    <div class="obj" id="obj-portrait" title="초상화 조사">
+      <div class="portrait-frame">
+        <div class="portrait-figure">
+          <div class="portrait-head"></div>
+          <div class="portrait-body-shape"></div>
+        </div>
+        <div class="portrait-plaque"><span>Dr. K</span></div>
+      </div>
+    </div>
+    <!-- 창문 소품 -->
+    <div class="mansion-window" style="position:absolute;top:50px;right:180px;width:50px;height:70px;">
+      <div class="window-frame">
+        <div class="window-moon"></div>
+        <div class="window-cross-h"></div>
+        <div class="window-cross-v"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETECTIVE -->
+  <div id="scene-detective" class="scene">
+    <div class="room-3d" aria-hidden="true"><div class="r3d-l"></div><div class="r3d-r"></div><div class="r3d-f"></div><div class="r3d-c"></div></div>
+    <div class="wood-panel"></div>
+    <div class="det-wallpaper"></div>
+    <div class="det-floor"></div>
+    <div class="det-lamp-glow"></div>
+    <!-- 책상 -->
+    <div class="det-desk" style="left:calc(50% - 80px);">
+      <div class="det-desk-top" style="width:160px;height:14px;position:relative;">
+        <span class="det-desk-leg" style="left:8px;"></span>
+        <span class="det-desk-leg" style="right:8px;"></span>
+      </div>
+    </div>
+    <!-- 파일 캐비닛 -->
+    <div class="file-cabinet" style="left:8%;width:50px;height:100px;">
+      <div class="cabinet-drawer" style="height:32px;"><div class="cabinet-handle"></div></div>
+      <div class="cabinet-drawer" style="height:32px;"><div class="cabinet-handle"></div></div>
+      <div class="cabinet-drawer" style="height:32px;"><div class="cabinet-handle"></div></div>
+    </div>
+    <!-- 아코디언 파일 -->
+    <div class="accordion-file" style="position:absolute;left:12%;bottom:100px;height:70px;"></div>
+    <!-- 의자 -->
+    <div class="det-chair" style="right:30%;">
+      <div class="det-chair-back"></div>
+      <div class="det-chair-seat"></div>
+      <div style="display:flex;justify-content:space-between;width:44px;">
+        <span class="det-chair-leg"></span>
+        <span class="det-chair-leg"></span>
+      </div>
+    </div>
+    <!-- 서류더미 소품 -->
+    <div class="paper-stack" style="position:absolute;bottom:114px;left:calc(50% + 30px);">
+      <div class="paper-sheet" style="width:44px;height:3px;top:0;left:2px;"></div>
+      <div class="paper-sheet" style="width:44px;height:3px;top:3px;left:0;"></div>
+      <div class="paper-sheet" style="width:44px;height:3px;top:6px;left:3px;"></div>
+    </div>
+    <!-- 커피잔 -->
+    <div class="coffee-mug" style="position:absolute;bottom:114px;left:calc(50% - 60px);"></div>
+    <!-- ★ 간접 힌트: 신문지 — 내용은 클릭 후 팝업 -->
+    <div class="newspaper obj" id="obj-newspaper" style="bottom:114px;left:calc(50% - 20px);transform:rotate(-2deg);width:60px;height:72px;"
+         title="신문 조사">
+      <div class="newspaper-title" style="font-size:0.5rem;border-bottom:1px solid #888;margin-bottom:4px;letter-spacing:1px;">DAILY CIPHER</div>
+      <div class="newspaper-lines">
+        <div class="np-line"></div>
+        <div class="np-line short"></div>
+        <div class="np-line"></div>
+        <div class="np-line short"></div>
+      </div>
+    </div>
+    <!-- ★ 간접 힌트: 탐문 메모 — 내용은 클릭 후 팝업 -->
+    <div class="det-note obj" id="obj-floor-note" style="bottom:105px;left:620px;width:56px;height:60px;transform:rotate(1.5deg);"
+         title="메모 조사">
+      <div class="note-fold-lines">
+        <div class="note-fold" style="background:#a08060;"></div>
+        <div class="note-fold" style="background:#a08060;width:60%;"></div>
+        <div class="note-fold" style="background:#a08060;"></div>
+      </div>
+    </div>
+    <div class="obj" id="obj-corkboard" title="수사 게시판">
+      <div class="corkboard-bg" id="corkboard-inner"></div>
+    </div>
+    <div class="obj" id="obj-typewriter" title="타자기">
+      <div class="typewriter-paper"></div>
+      <div class="typewriter-body">
+        <div class="typewriter-keys" id="typewriter-keys"></div>
+      </div>
+    </div>
+    <div class="obj" id="obj-phone" title="전화기">
+      <div class="phone-body">
+        <div class="phone-receiver"></div>
+        <div class="phone-dial"></div>
+      </div>
+    </div>
+    <div class="obj" id="obj-safe" title="금고">
+      <div class="safe-body">
+        <div class="safe-dial-ring">
+          <div class="safe-dial-notch"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ★ 스토리: 수사 파일 -->
+    <div class="obj" id="obj-case-file" title="수사 파일 조사">
+      <div class="case-file-body">
+        <div class="case-file-tab"></div>
+        <div class="case-file-label"><span>CASE #F-2024</span></div>
+        <div class="case-file-lines">
+          <div class="case-file-line"></div>
+          <div class="case-file-line"></div>
+          <div class="case-file-line"></div>
+        </div>
+        <div class="case-file-stamp">미제</div>
+      </div>
+    </div>
+    <!-- 코트 걸이 소품 -->
+    <div class="det-coat-rack" style="position:absolute;bottom:100px;right:4%;width:22px;height:120px;">
+      <div class="coat-rack-pole" style="top:22px;bottom:0;"></div>
+      <div class="coat-rack-hat">
+        <div class="hat-crown"><div class="hat-band"></div></div>
+        <div class="hat-brim"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메모 팝업 오버레이 -->
+  <div id="note-popup-overlay" onclick="NotePopup.close()">
+    <div id="note-popup-box" onclick="event.stopPropagation()">
+      <button id="note-popup-close" onclick="NotePopup.close()">✕</button>
+      <div id="note-popup-title"></div>
+      <div id="note-popup-body"></div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="log-overlay"></div>
+  <!-- 힌트 요청 토스트 -->
+  <div id="hint-toast"></div>
+  <!-- 씬 전환 오버레이 -->
+  <div id="transition-overlay" class="transition-overlay"></div>
+
+  <!-- HINT JOURNAL PANEL -->
+  <div id="hint-panel">
+    <div id="hint-panel-header">
+      <div class="hint-panel-title">📓 단서 일지</div>
+      <button id="hint-panel-close" onclick="HintJournal.toggle()">✕</button>
+    </div>
+    <div id="hint-entries"></div>
+  </div>
+  <div id="hint-toggle" onclick="HintJournal.toggle()">
+    <div id="hint-count">0</div>
+    <div id="hint-toggle-label">단서</div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div id="inv-bar">
+    <div class="inv-label">인벤토리</div>
+    <div id="inv-slots"></div>
+  </div>
+
+  <!-- ── MODALS ── -->
+
+  <!-- Dial -->
+  <div class="modal-overlay" id="modal-dial">
+    <button class="modal-close" onclick="Game.closeModal('modal-dial')">[ ESC ]</button>
+    <div>
+      <div class="modal-title">제단의 봉인 다이얼</div>
+      <div class="dial-container">
+        <div class="dial-row" id="dial-row"></div>
+        <div class="dial-hint" id="dial-hint">벽화의 상형문자를 해독하라. 벽화와 해골의 숫자를 순서대로 입력하라.</div>
+        <button class="dial-submit" onclick="Game.checkDial()">[ 봉인 해제 시도 ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wire -->
+  <div class="modal-overlay" id="modal-wire">
+    <button class="modal-close" onclick="Game.closeModal('modal-wire')">[ ESC ]</button>
+    <div>
+      <div class="modal-title">배선 복구 퍼즐</div>
+      <div class="wire-container">
+        <div class="wire-desc">비상 사물함의 전자 잠금 장치가 손상됐다. 왼쪽 포트를 오른쪽 올바른 출력에 연결하라. 포트 번호와 출력 레이블의 규칙을 찾아야 한다.</div>
+        <div class="wire-board" id="wire-board">
+          <svg class="wire-svg" id="wire-svg"></svg>
+          <div class="wire-col" id="wire-left"></div>
+          <div style="flex:1"></div>
+          <div class="wire-col" id="wire-right"></div>
+        </div>
+        <div class="wire-key">힌트: 각 포트 번호에 3을 더하면 출력 레이블이 된다.</div>
+        <div class="wire-status" id="wire-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal -->
+  <div class="modal-overlay" id="modal-term">
+    <button class="modal-close" onclick="Game.closeModal('modal-term')">[ ESC ]</button>
+    <div id="terminal-ui">
+      <div class="term-header">
+        <div class="term-dot red"></div>
+        <div class="term-dot amber"></div>
+        <div class="term-dot green"></div>
+        <div class="term-sys">SYS-OS v9.4.1 // BREACH PROTOCOL ACTIVE</div>
+      </div>
+      <div id="term-output"></div>
+      <div class="term-input-row">
+        <div class="term-prompt">root@fracture-IV:~$</div>
+        <input type="text" id="term-input" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+  </div>
+
+  <!-- Cipher (mansion) -->
+  <div class="modal-overlay" id="modal-cipher">
+    <button class="modal-close" onclick="Game.closeModal('modal-cipher')">[ ESC ]</button>
+    <div>
+      <div class="modal-title">룬 문자 해독 — 마법서</div>
+      <div class="cipher-container">
+        <div class="cipher-grid" id="cipher-grid"></div>
+        <div class="cipher-clue" id="cipher-clue"></div>
+        <div class="cipher-input-row" style="margin-top:14px">
+          <input class="cipher-input" id="cipher-input" maxlength="5" placeholder="_ _ _ _ _">
+          <button class="cipher-submit" onclick="Game.checkCipher()">해독</button>
+        </div>
+        <div class="wire-status" id="cipher-status" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage clear -->
+  <div class="modal-overlay" id="modal-clear">
+    <div class="clear-content">
+      <div class="clear-icon" id="clear-icon">🔓</div>
+      <div class="clear-title" id="clear-title">봉인 해제</div>
+      <div class="clear-story" id="clear-story"></div>
+      <button class="clear-next" id="clear-next-btn" onclick="Game.nextStage()">다음 차원 →</button>
+    </div>
+  </div>
+
+  <!-- Ending -->
+  <div class="modal-overlay" id="modal-ending">
+    <div class="ending-content">
+      <div class="ending-ascii">
+ ███████╗██████╗  █████╗  ██████╗████████╗██╗   ██╗██████╗ ███████╗
+ ██╔════╝██╔══██╗██╔══██╗██╔════╝╚══██╔══╝██║   ██║██╔══██╗██╔════╝
+ █████╗  ██████╔╝███████║██║        ██║   ██║   ██║██████╔╝█████╗
+ ██╔══╝  ██╔══██╗██╔══██║██║        ██║   ██║   ██║██╔══██╗██╔══╝
+ ██║     ██║  ██║██║  ██║╚██████╗   ██║   ╚██████╔╝██║  ██║███████╗
+ ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝</div>
+      <div class="ending-title">시간의 균열, 봉합 완료</div>
+      <div class="ending-story">
+        고대의 지혜, 우주의 논리, 마법의 암호, 탐정의 추리—<br>
+        당신은 네 차원의 봉인을 모두 해제했다.<br>
+        균열이 닫히고, 시간이 제자리를 찾았다.<br>
+        당신은 자유다.
+      </div>
+      <div style="font-size: 0.845rem; letter-spacing:2px; color:#333; margin-bottom:8px;" id="end-time-display"></div>
+      <div id="end-grade-display"></div>
+      <div id="end-stage-times"></div>
+      <button class="ending-restart" onclick="SaveSystem.clear(); location.reload()">[ 다시 시작 ]</button>
+    </div>
+  </div>
+
+</div><!-- #game-wrap -->
+
+<!-- ══ 오답 패널티 오버레이 ══ -->
+<div id="penalty-flash"></div>
+<div id="penalty-indicator"></div>
+
+<!-- ══════════════════════════════════════════
+     INTRO CINEMATIC
+══════════════════════════════════════════ -->
+<div id="intro-cinematic" onclick="Cinematic.skipIntro()">
+  <div class="ic-glow"></div>
+  <div class="ic-particles" id="ic-particles"></div>
+  <svg class="ic-cracks" viewBox="0 0 1024 768" xmlns="http://www.w3.org/2000/svg">
+    <path class="ic-cl cl1" d="M512,384 L435,258 L398,152 M512,384 L568,202 L606,88"/>
+    <path class="ic-cl cl2" d="M512,384 L625,512 L692,628 M512,384 L398,592 L342,718"/>
+    <path class="ic-cl cl3" d="M512,384 L192,356 L88,342 M512,384 L832,368 L948,354"/>
+  </svg>
+  <div class="ic-flood"></div>
+  <div class="ic-text ic-t1">... 어디에 있는 거지?</div>
+  <div class="ic-text ic-t2">아무것도 보이지 않는다.</div>
+  <div class="ic-text ic-t3">시간의 균열이 — 나를 삼켰다.</div>
+  <div class="ic-skip">클릭하여 건너뛰기</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     OUTRO CINEMATIC
+══════════════════════════════════════════ -->
+<div id="outro-cinematic" onclick="Cinematic.skipOutro()">
+  <div class="oc-crack-wrap">
+    <div class="oc-crack"></div>
+    <div class="oc-glow"></div>
+  </div>
+  <div class="oc-flood"></div>
+  <div class="oc-text oc-t1">균열이 봉합되고 있다 ...</div>
+  <div class="oc-text oc-t2">탈출했다.</div>
+  <div class="ic-skip">클릭하여 건너뛰기</div>
+</div>
+
+</div><!-- #game-root -->
+
+<script src="fracture-systems.js"></script>
+<script src="fracture.js"></script>
+<script>
+/* 화면 크기에 맞게 1024×768 게임 창을 비율 유지하며 스케일 */
+(function scaleGame() {
+  function fit() {
+    const root = document.getElementById('game-root');
+    const scaleX = window.innerWidth  / 1024;
+    const scaleY = window.innerHeight / 768;
+    const scale  = Math.min(scaleX, scaleY);
+    root.style.transform       = `scale(${scale})`;
+    root.style.transformOrigin = '50% 50%';
+  }
+  fit();
+  window.addEventListener('resize', fit);
+})();
+</script>
+</body>
+</html>

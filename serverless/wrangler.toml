@@ -1,0 +1,16 @@
+name = "arcadia-recommend"
+main = "recommend-worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+# 이 주소에서 온 브라우저 요청만 허용 (쉼표로 구분). 배포 주소에 맞게 수정.
+ALLOWED_ORIGINS = "https://gugaeun.github.io,http://localhost:5173"
+
+# --- 아래 둘은 LLM API 키를 발급받은 뒤 채운다 (아직 미정) ---
+# LLM_PROVIDER: anthropic | openai | gemini
+LLM_PROVIDER = ""
+# 사용할 모델 이름 (제공자 문서에서 확인해서 입력)
+LLM_MODEL = ""
+
+# API 키는 여기에 쓰지 않는다. 시크릿으로 등록:
+#   npx wrangler secret put LLM_API_KEY

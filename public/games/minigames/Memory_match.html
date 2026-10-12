@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기억력 카드 게임</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fdf6e3;
+    --accent: #ffa600;
+    --green: #2ecc71;
+    --red: #ff6b6b;
+    --text: #2c2c2c;
+    --shadow: #e0c97f;
+    --card-back: #ff6b6b;
+  }
+
+  body {
+    background: #e9e1c5;
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  /* 740x580 고정 해상도 컨테이너로 수정됨 */
+  #game-container {
+    width: 740px;
+    height: 580px;
+    position: relative;
+    background: var(--bg);
+    background-image: radial-gradient(circle, #e8d8a0 1px, transparent 1px);
+    background-size: 28px 28px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    transform-origin: center center;
+  }
+
+  h1 {
+    font-family: 'Jua', sans-serif;
+    font-size: 2rem;
+    color: var(--card-back);
+    letter-spacing: -1px;
+    text-shadow: 3px 3px 0 var(--shadow);
+    margin-bottom: 4px;
+  }
+
+  .round-bar {
+    display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; justify-content: center; width: 100%;
+  }
+  .round-dot {
+    width: 20px; height: 20px; border-radius: 50%; background: #e8dfc0; border: 2px solid #d4c87a;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Jua', sans-serif; font-size: 0.6rem; color: #bbb;
+    transition: background 0.3s, border-color 0.3s, transform 0.2s;
+  }
+  .round-dot.done   { background: var(--green); border-color: #1a9950; color: #fff; }
+  .round-dot.active { background: var(--accent); border-color: #c47f00; color: #fff; transform: scale(1.1); }
+
+  .hud {
+    display: flex; gap: 12px; margin-bottom: 10px; background: #fff;
+    border: 2px solid var(--shadow); border-radius: 50px; padding: 4px 16px;
+    box-shadow: 3px 3px 0 var(--shadow); justify-content: center;
+  }
+  .hud-item { text-align: center; min-width: 48px; }
+  .hud-label { font-size: 0.6rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+  .hud-value { font-family: 'Jua', sans-serif; font-size: 1.1rem; color: var(--text); }
+
+  .theme-badge {
+    font-family: 'Jua', sans-serif; font-size: 0.85rem; background: #fff;
+    border: 2px solid var(--shadow); border-radius: 50px; padding: 2px 14px;
+    color: var(--text); box-shadow: 2px 2px 0 var(--shadow); margin-bottom: 10px;
+  }
+
+  .grid-wrap {
+    width: 100%; flex: 1;
+    display: flex; justify-content: center; align-items: center;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .grid { display: grid; gap: 4px; }
+
+  .card { aspect-ratio: 1 / 1; perspective: 600px; cursor: pointer; flex-shrink: 0; }
+  .card-inner {
+    width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(.4,2,.55,.8); border-radius: 8px;
+  }
+  .card.flipped .card-inner, .card.matched .card-inner { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute; inset: 0; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border: 2px solid; font-size: 1.8rem;
+  }
+  .card-back { background: var(--card-back); border-color: #e05555; box-shadow: 2px 2px 0 #c0392b; }
+  .card-back::after { content: '?'; font-family: 'Jua', sans-serif; color: rgba(255,255,255,0.7); }
+  .card-front { background: #fff9f0; border-color: var(--shadow); box-shadow: 2px 2px 0 var(--shadow); transform: rotateY(180deg); }
+  .card.matched .card-face.card-front {
+    background: #e8fff0; border-color: #a8e6c0; box-shadow: 2px 2px 0 #a8e6c0; animation: pop 0.3s ease;
+  }
+  .card.wrong .card-face.card-front { animation: shake 0.4s ease; background: #fff0f0; border-color: #ffaaaa; }
+  /* 짝이 안 맞는 홀수 격자(5x5 등)의 남는 한 칸: 마스코트가 쉬고 있는 장식 칸 (누를 수 없음) */
+  .card.card-empty {
+    pointer-events: none; cursor: default;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px dashed var(--shadow); border-radius: 8px; background: rgba(224,201,127,0.15);
+  }
+  .card.card-empty img { max-width: 70%; max-height: 80%; image-rendering: pixelated; }
+
+  @keyframes pop { 0% { transform: rotateY(180deg) scale(1); } 50% { transform: rotateY(180deg) scale(1.18); } 100% { transform: rotateY(180deg) scale(1); } }
+  @keyframes shake { 0%,100% { transform: rotateY(180deg) translateX(0); } 25% { transform: rotateY(180deg) translateX(-4px); } 75% { transform: rotateY(180deg) translateX(4px); } }
+
+  .action-row { display: flex; gap: 10px; justify-content: center; }
+
+  .btn {
+    font-family: 'Jua', sans-serif; font-size: 0.95rem; background: var(--accent); color: #fff;
+    border: none; border-radius: 50px; padding: 6px 24px; cursor: pointer;
+    box-shadow: 3px 3px 0 #c47f00; transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #c47f00; }
+  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #c47f00; }
+  .btn.red { background: var(--red); box-shadow: 3px 3px 0 #c0392b; }
+  .btn.red:hover { box-shadow: 4px 4px 0 #c0392b; }
+  .btn.blue { background: #4aa8ff; box-shadow: 3px 3px 0 #2e7fd1; }
+  .btn.blue:hover { box-shadow: 4px 4px 0 #2e7fd1; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: 3px 3px 0 #c47f00; }
+  .btn[hidden] { display: none; }
+
+  .overlay {
+    display: none; position: absolute; inset: 0; background: rgba(253,246,227,0.92);
+    z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; backdrop-filter: blur(2px); border-radius: 12px;
+  }
+  .overlay.show { display: flex; }
+  .overlay-icon { font-size: 3.5rem; animation: popIn 0.4s cubic-bezier(.4,2,.55,.8); }
+  .overlay-title { font-family: 'Jua', sans-serif; font-size: 2rem; color: var(--card-back); text-shadow: 3px 3px 0 var(--shadow); animation: popIn 0.4s 0.05s both cubic-bezier(.4,2,.55,.8); }
+  .overlay-sub { color: #888; font-size: 0.9rem; animation: popIn 0.4s 0.1s both cubic-bezier(.4,2,.55,.8); }
+  .overlay-stats { display: flex; gap: 14px; background: #fff; border: 2px solid var(--shadow); border-radius: 50px; padding: 6px 20px; box-shadow: 3px 3px 0 var(--shadow); animation: popIn 0.4s 0.15s both cubic-bezier(.4,2,.55,.8); }
+  .overlay-stat { text-align: center; }
+  .overlay-stat .lbl { font-size: 0.6rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+  .overlay-stat .val { font-family: 'Jua', sans-serif; font-size: 1.3rem; color: var(--text); }
+  @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .btns-row { display: flex; gap: 10px; animation: popIn 0.4s 0.2s both cubic-bezier(.4,2,.55,.8); }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <h1>🃏 기억력 카드</h1>
+  <div class="round-bar" id="roundBar"></div>
+  <div class="hud">
+    <div class="hud-item"><div class="hud-label">단계</div><div class="hud-value" id="hudRound">1 / 15</div></div>
+    <div class="hud-item"><div class="hud-label">시도</div><div class="hud-value" id="hudMoves">0</div></div>
+    <div class="hud-item"><div class="hud-label">쌍</div><div class="hud-value" id="hudPairs">0 / ?</div></div>
+    <div class="hud-item"><div class="hud-label">시간</div><div class="hud-value" id="hudTimer">0s</div></div>
+    <div class="hud-item"><div class="hud-label">점수</div><div class="hud-value" id="hudScore">0</div></div>
+  </div>
+  <div class="theme-badge" id="themeBadge">🐾 동물</div>
+
+  <div class="grid-wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn blue" id="hintBtn">💡 힌트 (3)</button>
+    <button class="btn red" id="restartBtn">처음부터</button>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-icon" id="ovIcon">🎉</div>
+    <div class="overlay-title" id="ovTitle">단계 클리어!</div>
+    <div class="overlay-sub" id="ovSub">다음 단계로 이동합니다</div>
+    <div class="overlay-stats">
+      <div class="overlay-stat"><div class="lbl">단계</div><div class="val" id="ovRound">-</div></div>
+      <div class="overlay-stat"><div class="lbl">시간</div><div class="val" id="ovTime">-</div></div>
+      <div class="overlay-stat"><div class="lbl">시도</div><div class="val" id="ovMoves">-</div></div>
+      <div class="overlay-stat"><div class="lbl">점수</div><div class="val" id="ovScore">-</div></div>
+    </div>
+    <div class="btns-row"><button class="btn" id="nextBtn">다음 단계 →</button></div>
+  </div>
+</div>
+
+<script>
+// ── Window Resize Scaling Logic ──
+// 최대 740x580 사이즈를 유지하며 창이 작아질 경우 비율에 맞게 스케일 다운
+function handleResize() {
+  const container = document.getElementById('game-container');
+  const scaleX = window.innerWidth / 740;
+  const scaleY = window.innerHeight / 580;
+  const scale = Math.min(scaleX, scaleY, 1);
+  container.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', handleResize);
+handleResize();
+
+// 1단계 5x5에서 매 단계 격자가 커지다가 10x10(6단계)부터는 고정하고,
+// 대신 힌트 사용 가능 횟수를 줄여서 난이도를 올림.
+// 홀수 x 홀수 격자(칸 수가 홀수)는 정확히 반으로 나뉘지 않으므로
+// 빈 칸 하나를 장식용으로 남겨둔다 (blank: true).
+const ROUNDS = [
+  { n: 5,  pairs: 12, blank: true,  hints: 3 },
+  { n: 6,  pairs: 18, blank: false, hints: 3 },
+  { n: 7,  pairs: 24, blank: true,  hints: 3 },
+  { n: 8,  pairs: 32, blank: false, hints: 2 },
+  { n: 9,  pairs: 40, blank: true,  hints: 2 },
+  { n: 10, pairs: 50, blank: false, hints: 2 },
+  { n: 10, pairs: 50, blank: false, hints: 1 },
+  { n: 10, pairs: 50, blank: false, hints: 1 },
+  { n: 10, pairs: 50, blank: false, hints: 1 },
+  { n: 10, pairs: 50, blank: false, hints: 1 },
+  { n: 10, pairs: 50, blank: false, hints: 0 },
+  { n: 10, pairs: 50, blank: false, hints: 0 },
+  { n: 10, pairs: 50, blank: false, hints: 0 },
+  { n: 10, pairs: 50, blank: false, hints: 0 },
+  { n: 10, pairs: 50, blank: false, hints: 0 },
+];
+const TOTAL_ROUNDS = ROUNDS.length;
+
+const THEMES = [
+  { name: '🐾 동물',    pool: ['🐶','🐱'] },
+  { name: '🍎 과일',    pool: ['🍎','🍊','🍋','🍇','🍓','🍑','🍒','🥭'] },
+  { name: '🚗 탈것',    pool: ['🚗','✈️','🚀','🚢','🚂','🏎️','🚁','⛵','🛸','🚤','🛵','🚌'] },
+  { name: '😀 표정',    pool: ['😀','😂','🥹','😍','🤩','😎','🥳','😤','🤔','😴','🤯','🥸','😇','🤠','😈','🫠','🥴','😵'] },
+  { name: '🌍 자연',    pool: ['🌸','🌊','🌋','🌈','☁️','❄️','🌙','⭐','🌿','🍄','🌺','🦋','🌵','🌴','🌻','🌾','🌏','🦀','🐚','🪸','🍃','🌤️','🌦️','🌩️'] },
+  { name: '🍕 음식',    pool: ['🍕','🍔','🌮','🍣','🍜','🍦','🎂','🍩','🥐','🥗','🍱','🧁','🥩','🍟','🧆','🥘','🍲','🥣','🥙','🫔','🌯','🍛','🍝','🍠','🫕','🥞','🧇','🥓','🍗','🥚','🫙','🧀'] },
+  { name: '⚽ 스포츠',  pool: ['⚽','🏀','🎾','⚾','🏐','🏈','🥊','🏓','🎳','🏒','🏸','🤿','🎯','🏹','🥋','🛹','🏄','🧗','🏊','🚵','🤸','⛷️','🏋️','🤼','🤺','🏇','🥌','🛼','🪃','🏑','🥅','🎿','🛷','🪁','🏌️','🚣','🤽','🪂','🎣'] },
+  { name: '🎸 악기',    pool: ['🎸','🎹','🎺','🎻','🥁','🪗','🎷','🪘','🎙️','🎵','🎼','🪕','🔔','📯','🎤','🎧','📻','🎚️','🎛️','🎶'] },
+  { name: '🏠 건물',    pool: ['🏠','🏰','🏯','⛩️','🕌','🗼','🗽','⛪','🏛️','🏟️','🛕','🏗️','🏬','🏦','🏥','🏨','🏩','🏪','🏫','🏭','🏢','🏣','🏤','🏡','⛺','🏕️','🛖'] },
+  { name: '🔮 마법',    pool: ['🔮','🌀','💎','⚡','🔥','💫','🌟','🧿','🪄','💜','🔱','🧲','🪬','✨','🌈','🦄','🧚','🧜','🧝','🧞','🧟','🧙','🐉'] },
+  { name: '🚀 우주',    pool: ['🚀','🛸','🪐','🌍','🌙','⭐','☄️','🌌','👽','🔭','🛰️','💫','🌠','🌑','🌕'] },
+  { name: '📚 문구',    pool: ['📚','✏️','📏','📐','🖊️','🖍️','📒','📕','📗','📘','📙','📓','📝','✂️','📌','📎','🗂️','🖇️'] },
+  { name: '🧸 장난감',  pool: ['🧸','🪀','🪁','🎲','🧩','🪄','🎯','🎮','🕹️','🪅','🎪','🎠','🎡','🎢'] },
+  { name: '🐝 곤충',    pool: ['🐝','🐞','🦋','🐛','🐜','🦗','🕷️','🦂','🐌','🦟','🪲','🪳','🦠'] },
+  { name: '☕ 음료',    pool: ['☕','🍵','🧋','🥤','🧃','🍹','🍸','🍷','🍺','🍻','🥂','🍾','🥛'] },
+];
+
+let round = 1, totalScore = 0;
+let flipped = [], matchedCount = 0, moves = 0, lock = false;
+let seconds = 0, timerInterval = null, started = false;
+let hintsLeft = 0;
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+function startTimer() {
+  if (started) return;
+  started = true;
+  timerInterval = setInterval(() => { seconds++; document.getElementById('hudTimer').textContent = seconds + 's'; }, 1000);
+}
+
+// 테마 풀이 필요한 쌍 수보다 적으면 앞에서부터 다시 채워서 길이를 맞춤
+function padPool(pool, minLen) {
+  if (pool.length >= minLen) return pool;
+  const out = [...pool];
+  let i = 0;
+  while (out.length < minLen) { out.push(pool[i % pool.length]); i++; }
+  return out;
+}
+
+function buildDots() {
+  const bar = document.getElementById('roundBar');
+  bar.innerHTML = '';
+  for (let i = 1; i <= TOTAL_ROUNDS; i++) {
+    const d = document.createElement('div');
+    d.className = 'round-dot' + (i < round ? ' done' : i === round ? ' active' : '');
+    d.textContent = i;
+    bar.appendChild(d);
+  }
+}
+
+function updateHintBtn() {
+  const btn = document.getElementById('hintBtn');
+  const cfg = ROUNDS[round - 1];
+  if (cfg.hints === 0) { btn.hidden = true; return; }
+  btn.hidden = false;
+  btn.textContent = `💡 힌트 (${hintsLeft})`;
+  btn.disabled = hintsLeft <= 0;
+}
+
+function initRound(r) {
+  round = r;
+  const cfg = ROUNDS[r - 1];
+  const theme = THEMES[r - 1];
+
+  flipped = []; matchedCount = 0; moves = 0; lock = false;
+  seconds = 0; started = false;
+  hintsLeft = cfg.hints;
+  stopTimer();
+
+  document.getElementById('hudRound').textContent  = r + ' / ' + TOTAL_ROUNDS;
+  document.getElementById('hudMoves').textContent  = '0';
+  document.getElementById('hudPairs').textContent  = '0 / ' + cfg.pairs;
+  document.getElementById('hudTimer').textContent  = '0s';
+  document.getElementById('hudScore').textContent  = totalScore;
+  document.getElementById('themeBadge').textContent = theme.name;
+  document.getElementById('overlay').classList.remove('show');
+  updateHintBtn();
+
+  buildDots();
+
+  const cols = cfg.n, rows = cfg.n;
+  const gridWrap = document.querySelector('.grid-wrap');
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const gap = 4;
+
+  const wrapW = gridWrap.clientWidth || 700;
+  const wrapH = gridWrap.clientHeight || 380;
+
+  const cardSizeW = Math.floor((wrapW - gap * (cols - 1)) / cols);
+  const cardSizeH = Math.floor((wrapH - gap * (rows - 1)) / rows);
+  const cardSize = Math.min(cardSizeW, cardSizeH);
+
+  const fontSize = cardSize >= 40 ? 1.8 : cardSize >= 30 ? 1.4 : cardSize >= 20 ? 1.0 : 0.7;
+
+  grid.style.gridTemplateColumns = `repeat(${cols}, ${cardSize}px)`;
+  grid.style.gridTemplateRows    = `repeat(${rows}, ${cardSize}px)`;
+  grid.style.gap = gap + 'px';
+  grid.className = 'grid';
+
+  const pool = padPool(theme.pool, cfg.pairs);
+  const chosen = shuffle(pool).slice(0, cfg.pairs);
+  const deckItems = [...chosen, ...chosen];
+  if (cfg.blank) deckItems.push('BLANK');
+  const deck = shuffle(deckItems);
+
+  deck.forEach(item => {
+    const card = document.createElement('div');
+    card.style.width  = cardSize + 'px';
+    card.style.height = cardSize + 'px';
+
+    if (item === 'BLANK') {
+      card.className = 'card card-empty';
+      card.innerHTML = '<img src="../../mascot/red-panda-front.png" alt="" draggable="false">';
+      grid.appendChild(card);
+      return;
+    }
+
+    card.className = 'card';
+    card.dataset.emoji = item;
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face card-back" style="font-size:${fontSize * 0.8}rem"></div>
+        <div class="card-face card-front" style="font-size:${fontSize}rem">${item}</div>
+      </div>`;
+    card.addEventListener('click', () => onFlip(card));
+    grid.appendChild(card);
+  });
+}
+
+function onFlip(card) {
+  if (lock) return;
+  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  startTimer();
+
+  card.classList.add('flipped');
+  flipped.push(card);
+
+  if (flipped.length === 2) {
+    lock = true; moves++;
+    document.getElementById('hudMoves').textContent = moves;
+    checkMatch();
+  }
+}
+
+function checkMatch() {
+  const [a, b] = flipped;
+  const cfg = ROUNDS[round - 1];
+  if (a.dataset.emoji === b.dataset.emoji) {
+    setTimeout(() => {
+      a.classList.remove('flipped'); a.classList.add('matched');
+      b.classList.remove('flipped'); b.classList.add('matched');
+      matchedCount++;
+      document.getElementById('hudPairs').textContent = matchedCount + ' / ' + cfg.pairs;
+      flipped = []; lock = false;
+      if (matchedCount === cfg.pairs) {
+        stopTimer();
+        const timeBonus  = Math.max(0, 120 - seconds) * 2;
+        const effBonus   = Math.max(0, (cfg.pairs * 2 - moves)) * 5;
+        const roundScore = cfg.pairs * 10 + timeBonus + effBonus;
+        totalScore += roundScore;
+        document.getElementById('hudScore').textContent = totalScore;
+        setTimeout(() => showRoundEnd(roundScore), 400);
+      }
+    }, 300);
+  } else {
+    setTimeout(() => {
+      a.classList.add('wrong'); b.classList.add('wrong');
+      setTimeout(() => {
+        a.classList.remove('flipped', 'wrong'); b.classList.remove('flipped', 'wrong');
+        flipped = []; lock = false;
+      }, 500);
+    }, 600);
+  }
+}
+
+function useHint() {
+  if (lock || hintsLeft <= 0) return;
+  hintsLeft--;
+  updateHintBtn();
+  lock = true;
+
+  const cards = [...document.querySelectorAll('#grid .card')]
+    .filter(c => !c.classList.contains('matched') && !c.classList.contains('card-empty'));
+  cards.forEach(c => c.classList.add('flipped'));
+
+  setTimeout(() => {
+    cards.forEach(c => { if (!c.classList.contains('matched')) c.classList.remove('flipped'); });
+    lock = false;
+  }, 1200);
+}
+
+function showRoundEnd(roundScore) {
+  const isFinal = round === TOTAL_ROUNDS;
+  document.getElementById('ovIcon').textContent   = isFinal ? '🏆' : '🎉';
+  document.getElementById('ovTitle').textContent  = isFinal ? '게임 클리어!' : `단계 ${round} 클리어!`;
+  document.getElementById('ovSub').textContent    = isFinal ? `최종 점수: ${totalScore}점` : `+${roundScore}점 획득!`;
+  document.getElementById('ovRound').textContent  = round + ' / ' + TOTAL_ROUNDS;
+  document.getElementById('ovTime').textContent   = seconds + 's';
+  document.getElementById('ovMoves').textContent  = moves;
+  document.getElementById('ovScore').textContent  = totalScore;
+
+  const nextBtn = document.getElementById('nextBtn');
+  if (isFinal) {
+    nextBtn.textContent = '처음부터 다시';
+    nextBtn.onclick = () => { totalScore = 0; document.getElementById('hudScore').textContent = 0; initRound(1); };
+  } else {
+    nextBtn.textContent = `단계 ${round + 1} 시작 →`;
+    nextBtn.onclick = () => initRound(round + 1);
+  }
+  document.getElementById('overlay').classList.add('show');
+}
+
+document.getElementById('restartBtn').addEventListener('click', () => { totalScore = 0; initRound(1); });
+document.getElementById('hintBtn').addEventListener('click', useHint);
+
+setTimeout(() => { initRound(1); }, 50);
+</script>
+</body>
+</html>
