@@ -64,10 +64,42 @@ a {
 
 .navbar-brand {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 30px;
+  line-height: 1;
   text-decoration: none;
-  color: var(--text-primary);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  /* 마젠타 → 앰버 → 청록으로 흐르는 그라데이션 글자 */
+  background: linear-gradient(90deg, var(--accent-magenta), var(--accent-amber), var(--accent-cyan), var(--accent-magenta));
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(239, 45, 140, 0.25));
+  animation: brandShine 7s linear infinite;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.navbar-brand:hover {
+  transform: translateY(-2px) scale(1.05);
+  filter: drop-shadow(0 4px 12px rgba(239, 45, 140, 0.45));
+  animation-duration: 2.5s;
+}
+
+@keyframes brandShine {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 300% 50%;
+  }
+}
+
+/* '동작 줄이기'를 켠 사용자에게는 움직임 없이 그라데이션만 보여준다 */
+@media (prefers-reduced-motion: reduce) {
+  .navbar-brand {
+    animation: none;
+    transition: none;
+  }
 }
 
 .navbar-links {
@@ -1185,4 +1217,15 @@ button.quiz-cta:disabled {
   display: flex;
   justify-content: center;
   will-change: transform;
+}
+
+/* 1024×768 기준 게임(Escape)은 큰 상자에서 원래 크기로 보여준다. 화면이 좁으면 4:3 비율로 줄어든다. */
+.game-page-wide {
+  max-width: 1180px;
+}
+
+.game-embed-wide {
+  max-width: 1024px;
+  /* 화면 높이에서 위쪽(메뉴·제목·안내 문구) 공간을 뺀 만큼만 쓴다. 게임은 이 상자에 맞춰 알아서 줄어든다. */
+  height: clamp(440px, calc(100vh - 290px), 768px);
 }
