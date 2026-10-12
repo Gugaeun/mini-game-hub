@@ -1,0 +1,8 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# 개발 환경 전용 / 제출용 문서
+.claude/
+*.docx
