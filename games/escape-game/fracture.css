@@ -36,6 +36,9 @@
   --gh: 768px;
 }
 
+/* 글자가 작아 읽기 어려워서 기준 크기를 16px → 20px 로 키움 (모든 font-size 가 rem 이라 한꺼번에 커진다) */
+html { font-size: 20px; }
+
 body {
   background: #111;
   font-family: 'Shilla', 'Courier New', monospace;
@@ -230,7 +233,7 @@ body {
 .inv-slot.selected { border-color: var(--primary); background: var(--primary-dim); }
 .inv-slot-label {
   position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-  font-size: 0.58rem; color: #666; white-space: nowrap; letter-spacing: 0px;
+  font-size: 0.6rem; color: #666; white-space: nowrap; letter-spacing: 0px;
   background: rgba(0,0,0,0.6); padding: 0 2px;
 }
 
@@ -964,7 +967,7 @@ body {
 }
 .typewriter-paper::after {
   content: '— — — — — — —';
-  font-size: 0.585rem; color: #8a7a58;
+  font-size: 0.6rem; color: #8a7a58;
   position: absolute; bottom: 2px; left: 4px;
   letter-spacing: 1px;
 }
@@ -1877,7 +1880,7 @@ body {
 }
 .oxygen-tank::after {
   content:'O₂'; position:absolute; top:8px; left:50%; transform:translateX(-50%);
-  font-size:0.45rem; color:#0a3040; letter-spacing:0; font-family:monospace;
+  font-size:0.6rem; color:#0a3040; letter-spacing:0; font-family:monospace;
 }
 /* 케이블 묶음 */
 .cable-bundle {
@@ -1890,7 +1893,7 @@ body {
 .space-sticker {
   position:absolute; cursor:pointer; z-index:18;
   background:#ffff80; padding:4px 6px;
-  font-size:0.55rem; font-family:'Courier New',monospace;
+  font-size:0.6rem; font-family:'Courier New',monospace;
   color:#1a1a00; transform:rotate(2deg);
   box-shadow:2px 2px 4px rgba(0,0,0,0.6);
   border:1px solid #d0d050; line-height:1.4;
@@ -1905,7 +1908,7 @@ body {
 .sub-monitor-screen {
   position:absolute; inset:4px;
   background:#000; display:flex; align-items:center; justify-content:center;
-  font-size:0.45rem; color:#00ff41; font-family:monospace; letter-spacing:1px;
+  font-size:0.6rem; color:#00ff41; font-family:monospace; letter-spacing:1px;
 }
 
 /* ══════════════════════════════════════
@@ -2076,7 +2079,7 @@ body {
 .newspaper {
   position:absolute; cursor:pointer; z-index:18;
   background:#d8d0b8; padding:5px 6px;
-  font-size:0.5rem; font-family:'Courier New',monospace;
+  font-size:0.6rem; font-family:'Courier New',monospace;
   color:#1a1a0a; line-height:1.4;
   box-shadow:2px 2px 5px rgba(0,0,0,0.6);
   border:1px solid #b0a888;
@@ -2088,7 +2091,7 @@ body {
 .det-note {
   position:absolute; cursor:pointer; z-index:18;
   background:#f0e8d0; padding:5px 7px;
-  font-size:0.55rem; font-family:'Courier New',monospace;
+  font-size:0.6rem; font-family:'Courier New',monospace;
   color:#2a1800; line-height:1.5;
   box-shadow:2px 2px 5px rgba(0,0,0,0.7);
   border:1px solid #c8a878; transform:rotate(1.5deg);
@@ -2306,7 +2309,7 @@ body {
 }
 @keyframes datapad-blink { 0% { opacity: 0.3; } 100% { opacity: 1; } }
 .datapad-text {
-  font-size: 0.45rem; color: var(--cyan);
+  font-size: 0.6rem; color: var(--cyan);
   letter-spacing: 0.5px; z-index: 1; text-align: center; line-height: 1.4;
 }
 .datapad-btn-row {
@@ -2337,7 +2340,7 @@ body {
 }
 .gauge-label {
   position: absolute; bottom: 4px; left: 0; right: 0;
-  text-align: center; font-size: 0.42rem; color: rgba(0,188,212,0.4);
+  text-align: center; font-size: 0.6rem; color: rgba(0,188,212,0.4);
   letter-spacing: 0.5px;
 }
 
@@ -2377,7 +2380,7 @@ body {
   display: flex; align-items: center; justify-content: center;
 }
 .portrait-plaque span {
-  font-size: 0.42rem; color: rgba(160,80,255,0.45);
+  font-size: 0.6rem; color: rgba(160,80,255,0.45);
   letter-spacing: 1px; text-transform: uppercase;
 }
 
@@ -2430,7 +2433,7 @@ body {
   display: flex; align-items: center; justify-content: center;
 }
 .case-file-label span {
-  font-size: 0.42rem; color: #2a1808; letter-spacing: 0.5px;
+  font-size: 0.6rem; color: #2a1808; letter-spacing: 0.5px;
 }
 .case-file-lines {
   position: absolute; top: 24px; left: 7px; right: 7px;
@@ -2442,7 +2445,7 @@ body {
 .case-file-stamp {
   position: absolute; bottom: 8px; left: 50%;
   transform: translateX(-50%) rotate(-10deg);
-  font-size: 0.5rem; color: rgba(180,0,0,0.35);
+  font-size: 0.6rem; color: rgba(180,0,0,0.35);
   letter-spacing: 1px; text-transform: uppercase;
   border: 1px solid rgba(180,0,0,0.3); padding: 1px 3px;
   white-space: nowrap;
