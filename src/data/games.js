@@ -39,7 +39,7 @@ export const games = [
     id: 'escape-game',
     title: 'Escape Game',
     genre: 'Puzzle',
-    description: '어두운 방 안 오브젝트를 조사해 단서를 모으고 탈출하는 방탈출 게임. 현재 개발중.',
+    description: '단서를 모아 4개의 차원을 탈출하는 방탈출 게임. 시간 안에 못 나가면 차원이 붕괴해요. 현재 개발중.',
     status: 'dev',
     type: 'internal',
     route: '/games/escape',

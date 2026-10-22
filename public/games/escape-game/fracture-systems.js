@@ -5,15 +5,18 @@
 // ═══════════════════════════════════════════════════════════
 const Difficulty = (() => {
   let current = 'normal';
+  // timeLimit: 전체 제한 시간(초). null 이면 제한 없음. 이 시간 안에 4개 스테이지를 못 끝내면 차원이 붕괴한다.
+  //   (제한 시간을 바꾸면 GradeSystem.THR 의 등급 기준도 제한 시간 안에 들어오게 같이 조절한다)
   const CFG = {
-    easy:   { label: '쉬움',   hintsAllowed: 5 },
-    normal: { label: '보통',   hintsAllowed: 3 },
-    hard:   { label: '어려움', hintsAllowed: 1 },
+    easy:   { label: '쉬움',   hintsAllowed: 5, timeLimit: null },
+    normal: { label: '보통',   hintsAllowed: 3, timeLimit: 300 },  // 5:00
+    hard:   { label: '어려움', hintsAllowed: 1, timeLimit: 600 },  // 10:00
   };
   return {
     set: d => { current = d; },
     get: () => current,
     cfg: () => CFG[current],
+    timeLimit: () => CFG[current].timeLimit,
     CFG,
   };
 })();
@@ -192,10 +195,12 @@ const HintRequest = (() => {
 // ═══════════════════════════════════════════════════════════
 const GradeSystem = (() => {
   const PENALTY = 120; // 힌트 1회당 패널티(초)
+  // 제한 시간이 있는 난이도(보통 5분 · 어려움 10분)는 B 기준을 제한 시간과 같게 두었다.
+  // (힌트를 쓰면 힌트 1회당 120초가 더해져 계산되므로, 제한 시간 안에 끝내도 C 가 나올 수 있다)
   const THR = {
     easy:   { S: 900,  A: 1500, B: 2400 },
-    normal: { S: 600,  A: 1000, B: 1800 },
-    hard:   { S: 480,  A: 800,  B: 1400 },
+    normal: { S: 180,  A: 240,  B: 300  },
+    hard:   { S: 360,  A: 480,  B: 600  },
   };
   function calc(totalSec, hintsUsed, difficulty) {
     const thr = THR[difficulty] || THR.normal;

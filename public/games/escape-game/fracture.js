@@ -145,6 +145,7 @@ const Audio = (() => {
     success: () => { tone(440,'sine',0.15,0.2); setTimeout(()=>tone(554,'sine',0.15,0.2),120); setTimeout(()=>tone(660,'sine',0.3,0.2),240); },
     unlock:  () => { [300,400,500,660].forEach((f,i)=>setTimeout(()=>tone(f,'sine',0.2,0.15),i*80)); },
     hover:   () => tone(1400, 'sine', 0.03, 0.022),
+    tone,    // 붕괴 연출(fracture-collapse.js)에서도 사용
     getCtx,
   };
 })();
@@ -529,13 +530,22 @@ const Game = (() => {
   // ── timer
   let timerInterval, elapsedSeconds = 0;
   let _hoverListenerAdded = false;
+  const fmt = sec => `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+
+  // 제한 시간이 있는 난이도는 '남은 시간'을 줄여 보여주고, 없는 난이도(쉬움)는 경과 시간을 보여준다.
+  function renderTimer() {
+    const el = document.getElementById('hud-timer');
+    if (!el) return;
+    const limit = Difficulty.timeLimit();
+    el.classList.toggle('limited', limit != null);
+    if (limit == null) { el.textContent = fmt(elapsedSeconds); }
+    else                { el.textContent = fmt(Math.max(0, limit - elapsedSeconds)); }
+    if (typeof TimeLimit !== 'undefined') TimeLimit.update(limit == null ? null : limit - elapsedSeconds, limit);
+  }
+
   function startTimer() {
-    timerInterval = setInterval(() => {
-      elapsedSeconds++;
-      const m = String(Math.floor(elapsedSeconds/60)).padStart(2,'0');
-      const s = String(elapsedSeconds%60).padStart(2,'0');
-      document.getElementById('hud-timer').textContent = `${m}:${s}`;
-    }, 1000);
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => { elapsedSeconds++; renderTimer(); }, 1000);
   }
 
   // ── log
@@ -1776,7 +1786,9 @@ CURRENT  :: AIRLOCK_A :: LOCKED :: AWAITING_CODE
         if (key==='inventory'||key==='selected') renderInv();
       });
       elapsedSeconds = 0;
+      if (typeof TimeLimit !== 'undefined') TimeLimit.reset();
       startTimer();
+      renderTimer();
       StageTimer.reset();
       StageTimer.startStage(0);
       HintRequest.init();
@@ -1799,7 +1811,9 @@ CURRENT  :: AIRLOCK_A :: LOCKED :: AWAITING_CODE
       StageTimer.reset();
       StageTimer.restore(sv.stageTimes || []);
       HintRequest.init();
+      if (typeof TimeLimit !== 'undefined') TimeLimit.reset();
       startTimer();
+      renderTimer();
       _addHoverSound();
       const stageIdx = Math.min(sv.stage || 0, 3);
       Store.state.stage = stageIdx;
@@ -1811,7 +1825,10 @@ CURRENT  :: AIRLOCK_A :: LOCKED :: AWAITING_CODE
       Ambient.play(stageIdx);
       log(`STAGE ${stageIdx + 1}부터 이어서 탈출을 시작한다.`, '#c8a84b');
     },
-    addTime(secs) { elapsedSeconds += secs; },
+    addTime(secs) { elapsedSeconds += secs; renderTimer(); },
+    getElapsed: () => elapsedSeconds,
+    stopTimer: () => clearInterval(timerInterval),
+    log,
     closeModal,
     dialChange,
     checkDial,

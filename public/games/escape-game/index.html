@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FRACTURE — 시간의 균열</title>
 <link rel="stylesheet" href="fracture.css">
+<link rel="stylesheet" href="fracture-collapse.css">
 </head>
 <body>
 
@@ -19,7 +20,8 @@
     알 수 없는 힘이 당신을 네 개의 차원에 가뒀다.<br>
     <em>고대 신전 → 우주 정거장 → 마법사 저택 → 탐정 사무소.</em><br>
     각 세계에 숨겨진 퍼즐을 풀고, 시간의 균열을 봉합하라.<br>
-    탈출하지 않으면 모든 차원이 붕괴한다.
+    탈출하지 않으면 모든 차원이 붕괴한다.<br>
+    <em style="color:#8a3a3a">보통·어려움에서는 제한 시간이 흐른다.</em>
   </div>
   <div class="stage-list">
     <div class="stage-pip on">I · 신전</div>
@@ -31,9 +33,9 @@
   <div class="difficulty-selector">
     <div class="diff-label">난이도</div>
     <div class="diff-btns">
-      <button class="diff-btn" data-diff="easy"   onclick="selectDifficulty('easy')">쉬움<span>힌트 5회</span></button>
-      <button class="diff-btn active" data-diff="normal" onclick="selectDifficulty('normal')">보통<span>힌트 3회</span></button>
-      <button class="diff-btn" data-diff="hard"   onclick="selectDifficulty('hard')">어려움<span>힌트 1회</span></button>
+      <button class="diff-btn" data-diff="easy"   onclick="selectDifficulty('easy')">쉬움<span>힌트 5회<br>시간 제한 없음</span></button>
+      <button class="diff-btn active" data-diff="normal" onclick="selectDifficulty('normal')">보통<span>힌트 3회<br>제한 5분</span></button>
+      <button class="diff-btn" data-diff="hard"   onclick="selectDifficulty('hard')">어려움<span>힌트 1회<br>제한 10분</span></button>
     </div>
   </div>
   <button class="title-start" onclick="Game.start()">[ 탈출 시작 ]</button>
@@ -680,6 +682,37 @@
 </div><!-- #game-wrap -->
 
 <!-- ══ 오답 패널티 오버레이 ══ -->
+<!-- 제한 시간 경고: 붉은 테두리와 균열 (fracture-collapse.js) -->
+<div id="time-vignette"></div>
+<svg id="crack-overlay" viewBox="0 0 1024 768" preserveAspectRatio="none" aria-hidden="true">
+  <g>
+    <path class="crack-line" pathLength="100" d="M0 0 L90 70 L140 60 L230 150 L270 140 L360 260 L330 300 L420 380"/>
+    <path class="crack-hi"   pathLength="100" d="M2 2 L92 72 L142 62 L232 152 L272 142 L362 262 L332 302 L422 382"/>
+    <path class="crack-line" pathLength="100" d="M1024 0 L930 90 L960 140 L860 210 L880 270 L780 350 L800 420 L700 470"/>
+    <path class="crack-hi"   pathLength="100" d="M1022 2 L928 92 L958 142 L858 212 L878 272 L778 352 L798 422 L698 472"/>
+    <path class="crack-line" pathLength="100" d="M0 768 L110 690 L100 640 L210 580 L250 600 L340 520 L330 470"/>
+    <path class="crack-hi"   pathLength="100" d="M2 766 L112 688 L102 638 L212 578 L252 598 L342 518 L332 468"/>
+    <path class="crack-line" pathLength="100" d="M1024 768 L930 700 L950 650 L850 610 L860 560 L760 520 L770 480 L680 440"/>
+    <path class="crack-hi"   pathLength="100" d="M1022 766 L928 698 L948 648 L848 608 L858 558 L758 518 L768 478 L678 438"/>
+    <path class="crack-line slow" pathLength="100" d="M470 300 L520 350 L500 400 L560 450 L540 520 L600 560 L580 640"/>
+    <path class="crack-hi slow"   pathLength="100" d="M472 302 L522 352 L502 402 L562 452 L542 522 L602 562 L582 642"/>
+    <path class="crack-line slow" pathLength="100" d="M0 380 L80 400 L120 360 L220 410 L260 380"/>
+    <path class="crack-hi slow"   pathLength="100" d="M2 382 L82 402 L122 362 L222 412 L262 382"/>
+  </g>
+</svg>
+
+<!-- 시간이 다 되면: 화면이 조각나며 무너지고 '차원 붕괴' 결과를 보여준다 -->
+<div id="collapse-overlay">
+  <div class="collapse-bg"></div>
+  <div class="collapse-end">
+    <div class="cs-title">차원 붕괴</div>
+    <div class="cs-sub">균열이 모든 것을 삼켰다.<br>탈출하지 못한 자의 세계는 사라졌다…</div>
+    <div class="cs-stage"></div>
+    <div class="cs-stats"></div>
+    <button class="cs-retry" onclick="SaveSystem.clear(); location.reload()">[ 다시 도전 ]</button>
+  </div>
+  <div class="collapse-flash"></div>
+</div>
 <div id="penalty-flash"></div>
 <div id="penalty-indicator"></div>
 
@@ -719,6 +752,7 @@
 
 <script src="fracture-systems.js"></script>
 <script src="fracture.js"></script>
+<script src="fracture-collapse.js"></script>
 <script>
 /* 화면 크기에 맞게 1024×768 게임 창을 비율 유지하며 스케일 */
 (function scaleGame() {

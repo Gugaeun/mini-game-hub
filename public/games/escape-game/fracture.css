@@ -1280,7 +1280,9 @@ body {
   75%      { transform: translateX(-3px); }
   90%      { transform: translateX( 2px); }
 }
-#game-root.penalty-shake {
+/* #game-root 는 JS 가 transform: scale() 로 화면 크기에 맞추므로, 여기에 애니메이션을 걸면 배율이 덮어써져
+   흔들리는 동안 화면이 원래 크기로 튄다. 그래서 안쪽 #game-wrap 을 흔든다. */
+#game-root.penalty-shake #game-wrap {
   animation: penalty-shake 0.52s cubic-bezier(0.36,0.07,0.19,0.97) both;
 }
 
