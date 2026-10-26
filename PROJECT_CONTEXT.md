@@ -1,74 +1,52 @@
 # 프로젝트 컨텍스트 (Claude Code 등 새 세션용)
 
-이 문서는 claude.ai 채팅에서 이 프로젝트를 기획하며 나눈 대화 내용을
-요약한 것입니다. 새 세션에서 작업을 이어갈 때 먼저 읽어주세요.
+이 문서는 새 세션에서 작업을 이어갈 때 먼저 읽는 현재 상태 요약입니다. (2026-10-26 기준)
 
-## 프로젝트 목적
+## 프로젝트 개요
 
-- **무엇**: 개인이 만든 미니게임들을 모아둔 아케이드 스타일 포트폴리오 웹사이트
-- **왜**: 취업/포트폴리오용으로 보여주기 위함
-- **누구에게**: 1차 타겟은 채용담당자/개발자 동료, 하지만 링크를 타고 오는
-  불특정 다수도 재미있게 즐길 수 있어야 함 → "채용담당자가 스캔하기 쉬운
-  구조" + "아무나 들어와도 재밌는 UX"를 동시에 만족해야 함
+- **서비스명**: ARCADIA — 직접 만든 미니게임 10개를 모은 개인 아케이드 웹사이트
+- **핵심 기능**: 취향을 한두 문장(100자) 또는 객관식 3문항으로 입력하면 게임 1개와 추천 이유를 보여주는 추천 기능
+- **배포**: GitHub Pages — https://gugaeun.github.io/mini-game-hub/ (소스: https://github.com/Gugaeun/mini-game-hub)
+- **기간 / 작성자**: 2026-09-07 ~ 2026-10-25, 개인 프로젝트(구가은)
 
-## 벤치마킹 근거
+## 기술 스택과 구조
 
-세 유형을 비교해서 장점만 조합하기로 결정함:
+- React 18 + Vite 5, react-router-dom(HashRouter — GitHub Pages에서 새로고침 404를 피하려고 해시 방식 사용), `base: '/mini-game-hub/'`
+- 게임 목록은 `src/data/games.js` 한 곳에서 관리(홈 카드·추천 모두 여기서 만들어짐)
+- 직접 만든 게임(슈팅·벽돌깨기·리듬·산성비·지뢰찾기·오목·두더지잡기)은 규칙·판정을 `src/lib/*Engine.js` 순수 함수로 분리하고, React 페이지는 렌더링·입력만 담당
+- 기존 HTML/JS 게임(2048, Memory Match, Escape Game)은 `public/games/`에 두고 `<iframe>`으로 통합
+- 효과음·음악은 외부 파일 없이 WebAudio로 합성(`src/lib/sfx.js`)
+- 마스코트(레서판다 픽셀 캐릭터)는 PixelLab으로 생성, `public/mascot/`, 컴포넌트는 `src/components/Mascot.jsx`
 
-1. **미니멀·전문가형** (예: Jenova Chen 포트폴리오) — 깔끔하고 스캔하기
-   쉬움. 단점: 재미 요소 부족
-2. **플레이풀·인터랙티브형** (예: Facepunch) — 인상적이고 기억에 남음.
-   단점: 정보 찾기 산만, 로딩 무거움
-3. **브라우징 편의형** (예: itch.io류) — 게임 개수 늘려도 확장 쉬움.
-   단점: 개인 서사(왜 만들었는지)가 안 보임
-4. 사용자가 어릴 때 즐긴 "슈게임"(한국 아바타 캐릭터 기반 플래시 미니게임
-   모음)도 참고함 — 장점은 캐릭터 하나로 서로 다른 장르를 하나의
-   세계관처럼 묶는 것. 단점은 플래시 기반이라 기술이 죽으면서 사이트
-   전체가 소실된 것(→ 우리는 React/HTML로 만들어 이 문제를 원천 회피)
-   그리고 개발 맥락이 전혀 없는 순수 엔터테인먼트 상품이었다는 것
+## 게임 10개
 
-**결론**: 아케이드 마퀴 비주얼 + 카드 그리드 브라우징 + 마스코트 캐릭터로
-세계관 통일 + About 페이지로 "왜 만들었는지" 서사 보완.
+2048, Memory Match(15단계), Escape Game(개발 중), 슈팅, 벽돌깨기, 리듬(6단계·4단계부터 6레인), 산성비, 지뢰찾기, 오목(컴퓨터 대전 AI), 두더지잡기
 
-## 디자인 방향
+- **Escape Game**: 난이도별 제한 시간(쉬움 무제한 · 보통 5분 · 어려움 10분). 남은 시간 25% 이하 경고(균열), 10% 이하 위험(붉은 테두리·심장 소리), 0이 되면 화면이 무너지는 연출 후 "다시 도전". 시연용 단축키 **Shift+T**(누를 때마다 경고 → 위험 → 붕괴로 시간을 건너뜀). 코드는 `public/games/escape-game/fracture-collapse.js·css`.
 
-- **컨셉**: 레트로 아케이드 캐비닛/마퀴 스타일
-- **컬러**: 딥 인디고 배경(#130c22), 마젠타(#ff4fa3)/앰버(#ffb703)/시안(#4cd7e0) 포인트
-- **폰트**: 헤드라인은 Press Start 2P(픽셀), 본문은 Space Grotesk, 수치/라벨은 JetBrains Mono
-- **마스코트**: 랫서판다 캐릭터 (동글동글한 스타일 선호), `src/components/Mascot.jsx`에
-  SVG로 구현됨. pose prop으로 idle/shooting/rhythm 세 가지 모습.
-  게임 종류가 달라도 마스코트로 통일된 정체성을 줌 (슈게임 벤치마킹 반영)
+## 추천 기능
 
-## 기술 스택 & 구조
+- `src/data/quiz.js`(7개 성향 축·3문항), `src/lib/recommend.js`(키워드 매칭 + 선택적 원격 호출), `RecommendPanel`/`QuizModal`
+- **현재 동작은 규칙 기반**입니다. LLM 연동용 서버리스 중계 함수(Cloudflare Worker)는 `serverless/`에 코드와 테스트(11건)까지 작성했고, **API 키 발급과 배포는 아직 하지 않았습니다**(비용 문제로 이후 진행). 연동 순서는 `serverless/README.md` 참고. 키는 절대 저장소·채팅에 적지 않습니다.
 
-- React + Vite, react-router-dom (HashRouter — GitHub Pages 정적 호스팅에서
-  새로고침 시 404 안 나게 하려고 일부러 Hash 방식 사용)
-- `src/data/games.js` 하나만 고치면 홈 화면 카드가 자동으로 반영됨
-- 게임 구성 5개:
-  - 슈팅 게임, 리듬 게임 — 순수 React/Canvas로 새로 제작 (useRef에 게임
-    상태, useState는 HUD 표시값만 — 매 프레임 리렌더 피하기 위함)
-  - MiniGame 1, MiniGame 2, Escape Game — 사용자의 기존 GitHub 저장소
-    `Gugaeun/Practicum/Web_Practicum`에 있던 순수 HTML/JS 게임들.
-    코드는 건드리지 않고 `public/games/`에 원본 그대로 복사해 넣은 뒤
-    `<iframe>`으로 감싸서 보여주는 방식으로 통합함 (React로 새로
-    포팅하지 않음 — 시간 대비 이득이 적다고 판단)
+## 실행·테스트·배포
 
-## 현재 미해결 이슈
+```bash
+npm install
+npm run dev      # http://localhost:5173/mini-game-hub/
+npm test         # 71건 (엔진 시뮬레이션 60 + 서버리스 11)
+npm run deploy   # 빌드 후 gh-pages 브랜치로 배포
+```
 
-- `public/games/minigames/`, `public/games/escape-game/`에 **아직 실제
-  게임 파일이 안 들어가 있음** (PUT_YOUR_FILES_HERE.txt만 있는 상태).
-  그래서 MiniGame1/MiniGame2/EscapeGame 페이지 진입 시 iframe이 404를
-  띄우고 있었음.
-- `src/pages/MiniGame1.jsx`, `MiniGame2.jsx`, `EscapeGame.jsx`의
-  `src="..."` 경로가 placeholder(`game1.html`, `game2.html`,
-  `index.html`)로 되어 있어서, 실제 파일명과 다르면 맞춰줘야 함.
+## 작업 시 지켜 온 규칙
 
-## 다음에 할 일 (제안)
+- 사용자가 요청하기 전에는 push·배포하지 않는다.
+- `.docx`(제출 문서)와 `.claude/`는 저장소에 올리지 않는다(`.gitignore`).
+- 문서에는 직접 확인한 출처·실측값만 쓰고, 측정하지 않은 것은 "미측정"으로 적는다.
+- 마스코트는 역할이 있는 화면에만 쓴다.
 
-1. `Practicum/Web_Practicum/MiniGames`, `escape-game`의 실제 파일을
-   `mini-game-hub/public/games/`로 복사하고 경로 맞추기 (404 해결)
-2. `src/data/games.js`의 title/description을 실제 게임 내용으로 채우기
-3. `src/pages/About.jsx`의 자기소개/기술스택/링크를 실제 내용으로 채우기
-4. GitHub에 `mini-game-hub` 새 저장소로 push 후 `npm run deploy`로 배포
-5. (선택) 게임 상세 페이지 — 각 게임에 스크린샷/조작법/"무엇을 연습했는지"
-   추가하면 포트폴리오로서 완성도가 더 올라감 (아직 미착수)
+## 남은 일 (선택)
+
+- LLM API 키 발급 → 중계 함수 배포 → `VITE_RECOMMEND_API_URL` 설정 후 재배포
+- 지인 5명 사용자 평가와 추천 수락률 측정
+- Escape Game 퍼즐 완성, 글꼴 파일(약 8MB) 경량화
