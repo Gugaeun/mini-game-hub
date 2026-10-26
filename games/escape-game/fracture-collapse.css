@@ -1,0 +1,125 @@
+/* fracture-collapse.css — 제한 시간 경고 · 차원 붕괴 연출 */
+
+/* ── HUD 타이머 ─────────────────────────────────────────── */
+.hud-timer.limited::before { content: '⏳ '; }
+.hud-timer.timer-warn   { color: #e0a030; }
+.hud-timer.timer-danger {
+  color: #ff3b30;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+  animation: timerBlink 1s steps(2, jump-none) infinite;
+}
+@keyframes timerBlink { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
+
+/* ── 균열 · 붉은 테두리 (--crack: 0 ~ 1 이 game-root 에 설정된다) ── */
+#time-vignette {
+  position: absolute; inset: 0; z-index: 55; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 48%, rgba(150, 0, 0, calc(0.65 * var(--crack, 0))) 100%);
+}
+#game-root.time-danger #time-vignette { animation: vignettePulse 1s ease-in-out infinite; }
+@keyframes vignettePulse { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+
+#crack-overlay {
+  position: absolute; inset: 0; z-index: 56; pointer-events: none;
+  width: 100%; height: 100%;
+  opacity: calc(var(--crack, 0) * 3); /* 균열이 시작되면 바로 보이게 (0 에서는 완전히 투명) */
+}
+#crack-overlay path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+#crack-overlay .crack-line { stroke: #000; stroke-width: 5; }
+#crack-overlay .crack-hi   { stroke: rgba(255, 255, 255, 0.5); stroke-width: 1.5; }
+/* pathLength=100 으로 맞춰 두어, --crack 이 커질수록 선이 길게 자라난다 */
+#crack-overlay path { stroke-dasharray: 100; stroke-dashoffset: calc(100 * (1 - var(--crack, 0) * 1.1)); }
+#crack-overlay .slow { stroke-dashoffset: calc(100 * (1 - var(--crack, 0) * 0.8)); }
+
+#game-root.time-danger #game-wrap { animation: dangerFlicker 3.2s steps(1, end) infinite; }
+@keyframes dangerFlicker {
+  0%, 92%, 100% { filter: none; }
+  93% { filter: brightness(0.7) contrast(1.2); }
+  95% { filter: brightness(1.15); }
+  97% { filter: brightness(0.8); }
+}
+
+/* ── 붕괴 연출 ─────────────────────────────────────────── */
+/* 게임 화면 전체가 흔들린다 (확대/축소를 쓰는 #game-root 가 아니라 안쪽 #game-wrap 을 흔든다) */
+#game-root.collapse-quake #game-wrap { animation: collapseQuake 1.5s linear both; }
+@keyframes collapseQuake {
+  0%   { transform: translate(0, 0); }
+  8%   { transform: translate(-4px, 3px) rotate(-0.2deg); }
+  16%  { transform: translate(5px, -4px) rotate(0.25deg); }
+  24%  { transform: translate(-6px, 5px); }
+  32%  { transform: translate(7px, -6px) rotate(-0.3deg); }
+  40%  { transform: translate(-9px, 7px) rotate(0.35deg); }
+  48%  { transform: translate(10px, -8px); }
+  56%  { transform: translate(-12px, 9px) rotate(-0.5deg); }
+  64%  { transform: translate(13px, -10px) rotate(0.5deg); }
+  72%  { transform: translate(-15px, 11px); }
+  80%  { transform: translate(16px, -12px) rotate(-0.7deg); }
+  88%  { transform: translate(-18px, 13px) rotate(0.7deg); }
+  100% { transform: translate(0, 0); }
+}
+
+#collapse-overlay {
+  position: absolute; inset: 0; z-index: 100000;
+  display: none; overflow: hidden;
+  pointer-events: auto; /* 붕괴가 시작되면 더 이상 조작할 수 없다 */
+}
+#collapse-overlay.on { display: block; }
+
+.collapse-bg    { position: absolute; inset: 0; background: #000; opacity: 0; }
+.collapse-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+
+#collapse-overlay.shatter .collapse-bg    { opacity: 1; }
+#collapse-overlay.shatter .collapse-flash { animation: collapseFlash 0.7s ease-out forwards; }
+@keyframes collapseFlash { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+
+.shard-layer { position: absolute; inset: 0; }
+.shard {
+  position: absolute; inset: 0; overflow: hidden; will-change: transform, opacity;
+  animation: shardFall var(--dur, 1.8s) cubic-bezier(0.55, 0, 0.9, 0.45) var(--delay, 0s) forwards;
+}
+.shard-inner { position: absolute; left: 0; top: 0; width: var(--gw); height: var(--gh); pointer-events: none; }
+.shard-inner > * { position: absolute; inset: 0; }
+@keyframes shardFall {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  12%  { transform: translate(calc(var(--dx, 0) * 0.08px), -8px) rotate(calc(var(--rot, 0) * 0.1deg)); opacity: 1; }
+  100% { transform: translate(calc(var(--dx, 0) * 1px), 920px) rotate(calc(var(--rot, 0) * 1deg)); opacity: 0; }
+}
+
+/* 마지막 '차원 붕괴' 화면 */
+.collapse-end {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  text-align: center; opacity: 0; pointer-events: none;
+  transition: opacity 1.2s ease;
+}
+#collapse-overlay.show-end .collapse-bg  { opacity: 1; }
+#collapse-overlay.show-end .collapse-end { opacity: 1; pointer-events: auto; }
+
+.cs-title {
+  font-size: 4.2rem; letter-spacing: 14px; color: #c62828; margin-right: -14px;
+  text-shadow: 0 0 24px rgba(255, 0, 0, 0.55), 3px 0 #1ee, -3px 0 #f0f;
+  animation: csGlitch 3s steps(1, end) infinite;
+}
+@keyframes csGlitch {
+  0%, 90%, 100% { transform: none; }
+  91% { transform: translateX(-5px) skewX(-4deg); }
+  93% { transform: translateX(6px) skewX(4deg); }
+  95% { transform: none; }
+}
+.cs-sub   { font-size: 1rem; color: #8a7a6a; line-height: 1.9; letter-spacing: 2px; }
+.cs-stage { font-size: 1.05rem; color: var(--gold, #c8a84b); letter-spacing: 3px; margin-top: 10px; }
+.cs-stats { font-size: 0.8rem; color: #555; letter-spacing: 2px; }
+.cs-retry {
+  margin-top: 18px; padding: 10px 28px;
+  background: none; border: 1px solid #7a1a1a; color: #c62828;
+  font-family: inherit; font-size: 1rem; letter-spacing: 4px; cursor: pointer;
+}
+.cs-retry:hover { background: #2a0505; color: #ff5a4f; }
+
+/* '동작 줄이기': 조각·흔들림 없이 천천히 어두워지기만 한다 */
+#collapse-overlay.calm-fade .collapse-bg { opacity: 1; transition: opacity 0.8s ease; }
+@media (prefers-reduced-motion: reduce) {
+  #game-root.time-danger #time-vignette,
+  #game-root.time-danger #game-wrap,
+  .hud-timer.timer-danger,
+  .cs-title { animation: none; }
+}
