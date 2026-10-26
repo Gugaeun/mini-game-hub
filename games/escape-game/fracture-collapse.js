@@ -152,7 +152,11 @@ const Collapse = (() => {
     overlay.querySelector('.cs-stats').textContent =
       `${Difficulty.cfg().label} 모드 · 제한 시간 ${fmt(Difficulty.timeLimit() || 0)} 안에 탈출하지 못했다`;
 
-    const showEnd = () => overlay.classList.add('show-end');
+    const showEnd = () => {
+      overlay.classList.add('show-end');
+      const layer = overlay.querySelector('.shard-layer');
+      if (layer) layer.remove(); // 떨어진 조각은 더 필요 없다
+    };
 
     if (reducedMotion()) {
       // '동작 줄이기': 흔들림·조각 없이 어두워지고 결과만 보여준다
@@ -181,4 +185,23 @@ const Collapse = (() => {
   }
 
   return { start, rumble };
+})();
+
+/* 시연용 단축키 — Shift+T
+ * 누를 때마다 남은 시간을 경고(20%) → 위험(8%) → 붕괴(0) 순서로 건너뛴다.
+ * 녹화·시연 때 5분을 기다리지 않기 위한 용도이며, 제한 시간이 있는 난이도에서 게임 중일 때만 동작한다. */
+(() => {
+  const STEPS = [0.2, 0.08, 0];
+  document.addEventListener('keydown', e => {
+    if (!e.shiftKey || e.ctrlKey || e.metaKey || e.altKey || e.key.toLowerCase() !== 't') return;
+    if (/INPUT|TEXTAREA|SELECT/.test((e.target && e.target.tagName) || '')) return;
+    const limit = Difficulty.timeLimit();
+    const hud = document.getElementById('hud-timer');
+    const overlay = document.getElementById('collapse-overlay');
+    if (!limit || !hud || !hud.offsetParent || (overlay && overlay.classList.contains('on'))) return;
+    const remain = limit - Game.getElapsed();
+    const next = STEPS.find(r => r * limit < remain - 1);
+    if (next === undefined) return;
+    Game.addTime(Math.ceil(remain - next * limit) + (next === 0 ? 1 : 0));
+  });
 })();

@@ -71,9 +71,9 @@
 #collapse-overlay.shatter .collapse-flash { animation: collapseFlash 0.7s ease-out forwards; }
 @keyframes collapseFlash { 0% { opacity: 0.95; } 100% { opacity: 0; } }
 
-.shard-layer { position: absolute; inset: 0; }
+.shard-layer { position: absolute; inset: 0; pointer-events: none; } /* 조각이 결과 화면의 버튼을 가리지 않게 */
 .shard {
-  position: absolute; inset: 0; overflow: hidden; will-change: transform, opacity;
+  position: absolute; inset: 0; overflow: hidden; will-change: transform, opacity; pointer-events: none;
   animation: shardFall var(--dur, 1.8s) cubic-bezier(0.55, 0, 0.9, 0.45) var(--delay, 0s) forwards;
 }
 .shard-inner { position: absolute; left: 0; top: 0; width: var(--gw); height: var(--gh); pointer-events: none; }
@@ -88,7 +88,7 @@
 .collapse-end {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
-  text-align: center; opacity: 0; pointer-events: none;
+  text-align: center; opacity: 0; pointer-events: none; z-index: 2;
   transition: opacity 1.2s ease;
 }
 #collapse-overlay.show-end .collapse-bg  { opacity: 1; }
