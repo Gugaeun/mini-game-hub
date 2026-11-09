@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import QuizModal from './components/QuizModal'
+import PlayTracker from './components/PlayTracker'
 import Home from './pages/Home'
 import About from './pages/About'
 import Quiz from './pages/Quiz'
@@ -20,6 +21,7 @@ export default function App() {
     <>
       <NavBar />
       <QuizModal />
+      <PlayTracker />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />

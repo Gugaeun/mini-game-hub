@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createAudio, playSfx, setMuted } from './sfx'
+import { reportScore } from './telemetry'
 
 // 게임 화면들이 공통으로 쓰는 것: 화면 단계(phase), 효과음/음소거, 최고 기록(높을수록 좋은 점수).
 const readBest = (key) => {
@@ -45,6 +46,7 @@ export function useGameBasics(bestKey) {
 
   const saveBest = useCallback(
     (score) => {
+      reportScore(score) // 로그 API가 켜져 있을 때만 동작 (최고 기록 여부와 무관하게 이번 판 점수를 알림)
       if (score <= bestRef.current) return
       bestRef.current = score
       setBest(score)

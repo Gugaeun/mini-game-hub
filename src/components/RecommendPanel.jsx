@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { games } from '../data/games'
 import { AXES, QUESTIONS, emptyScore, pickBestGame } from '../data/quiz'
 import { MAX_LENGTH, recommend, usesRemoteAI, validate } from '../lib/recommend'
+import { logRecommendation } from '../lib/telemetry'
 
 // 게임 추천 UI. 퀴즈 페이지(pages/Quiz.jsx)와 팝업(components/QuizModal.jsx)이 공유한다.
 //   mode 'text' : 취향을 한두 문장으로 직접 입력
@@ -15,6 +16,7 @@ export default function RecommendPanel({ onNavigate }) {
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
   const [score, setScore] = useState(emptyScore())
+  const [picks, setPicks] = useState([]) // 문항별로 고른 선택지 순서 (로그용)
   const [outcome, setOutcome] = useState(null)
 
   function reset() {
@@ -23,6 +25,7 @@ export default function RecommendPanel({ onNavigate }) {
     setError('')
     setStep(0)
     setScore(emptyScore())
+    setPicks([])
     setOutcome(null)
   }
 
@@ -35,8 +38,13 @@ export default function RecommendPanel({ onNavigate }) {
     }
     setError('')
     setLoading(true)
+    const startedAt = Date.now()
+    const log = (extra) =>
+      logRecommendation({ mode: 'text', text: checked.text, latencyMs: Date.now() - startedAt, ...extra })
     try {
       const result = await recommend(checked.text, games)
+      if (result) log({ game: result.game, reason: result.reason, status: 'ok', engine: usesRemoteAI ? 'llm' : 'rule' })
+      else log({ status: 'invalid' })
       setOutcome(
         result
           ? { type: 'result', ...result }
@@ -47,6 +55,7 @@ export default function RecommendPanel({ onNavigate }) {
             },
       )
     } catch {
+      log({ status: 'fallback', engine: usesRemoteAI ? 'llm' : 'rule' })
       setOutcome({
         type: 'list',
         message: '추천을 불러오지 못했어요. 아래 전체 게임 목록에서 골라보세요.',
@@ -56,21 +65,22 @@ export default function RecommendPanel({ onNavigate }) {
     }
   }
 
-  function answer(optionScore) {
+  function answer(optionIndex, optionScore) {
     const next = { ...score }
     AXES.forEach((k) => {
       next[k] += optionScore[k] || 0
     })
     setScore(next)
+    const nextPicks = [...picks, optionIndex]
+    setPicks(nextPicks)
 
     if (step + 1 < QUESTIONS.length) {
       setStep(step + 1)
     } else {
-      setOutcome({
-        type: 'result',
-        game: pickBestGame(games, next),
-        reason: '고르신 답변을 종합해 가장 잘 맞는 게임이에요.',
-      })
+      const game = pickBestGame(games, next)
+      const reason = '고르신 답변을 종합해 가장 잘 맞는 게임이에요.'
+      logRecommendation({ mode: 'quiz', answers: nextPicks, game, reason, status: 'ok', latencyMs: 0 })
+      setOutcome({ type: 'result', game, reason })
     }
   }
 
@@ -123,8 +133,8 @@ export default function RecommendPanel({ onNavigate }) {
         </div>
         <h2 className="quiz-question">{QUESTIONS[step].q}</h2>
         <div className="quiz-options">
-          {QUESTIONS[step].options.map((opt) => (
-            <button key={opt.label} className="quiz-option" onClick={() => answer(opt.score)}>
+          {QUESTIONS[step].options.map((opt, i) => (
+            <button key={opt.label} className="quiz-option" onClick={() => answer(i, opt.score)}>
               {opt.label}
             </button>
           ))}

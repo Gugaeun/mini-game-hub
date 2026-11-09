@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import RecommendPanel from './RecommendPanel'
+import { trackEvent } from '../lib/telemetry'
 
 // Only pop up once per browser session — closing it means "not now", not
 // "never"; the recommender stays reachable anytime from the navbar/home CTA.
@@ -17,12 +18,16 @@ export default function QuizModal() {
     }
     if (alreadySeen) return
 
-    const timer = setTimeout(() => setOpen(true), 900)
+    const timer = setTimeout(() => {
+      setOpen(true)
+      trackEvent('popup_shown')
+    }, 900)
     return () => clearTimeout(timer)
   }, [])
 
   function close() {
     setOpen(false)
+    trackEvent('popup_closed')
     try {
       sessionStorage.setItem(SEEN_KEY, '1')
     } catch {
