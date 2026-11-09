@@ -108,6 +108,18 @@ npm run deploy
   **LLM API 키 발급과 배포는 아직 하지 않았고, 이후 진행 예정**입니다.
   연동하려면 `VITE_RECOMMEND_API_URL` 에 배포한 함수 주소를 설정합니다. 자세한 순서는 [serverless/README.md](serverless/README.md) 참고.
 
+### 사용 로그 · Oracle DB (로컬 시연)
+
+추천이 실제로 플레이로 이어지는지 확인하려고, 방문·추천·플레이를 기록하는 로그 수집과 DB 설계를 더했습니다.
+**GitHub Pages 배포본에는 연결되어 있지 않고, 로컬 PC에서 시연한 범위입니다.**
+
+- **DB 설계**: Oracle 19c, 17개 테이블(게임 카탈로그 7 · 방문·추천 로그 6 · 성과·개인화 4). 추천 결과와 플레이를 `play_log.from_result_id` 로 이어서 추천 수락률(추천에서 시작된 플레이 ÷ 추천 결과 수)을 계산합니다.
+- **로컬 API 서버**(Node + oracledb): 로그 저장과 수락률 집계를 맡습니다. 스모크 테스트 22개 항목(정상 흐름, 예외 입력, 수락률 계산, CORS)을 통과했습니다.
+- **프런트 연동**: [`feature/arcadia-db-logging`](https://github.com/Gugaeun/mini-game-hub/tree/feature/arcadia-db-logging) 브랜치(`src/lib/telemetry.js`, `src/components/PlayTracker.jsx` 등)에 있습니다. `VITE_ARCADIA_LOG_URL` 이 설정된 로컬 환경에서만 동작하고, 없으면 아무 일도 하지 않으므로 배포본에는 영향이 없습니다.
+- **확인한 것**: 첫 방문 팝업, 문장 추천, 객관식 추천, 추천에서 시작한 플레이와 직접 선택한 플레이의 구분, 수락률 계산. 게임 점수 저장은 두더지잡기·벽돌깨기를 끝까지 플레이해 확인했습니다(산성비는 같은 훅에 연결했지만 직접 플레이해 보지는 않았습니다).
+- **개인정보**: 입력한 문장 원문은 기본적으로 저장하지 않고 해시와 글자 수만 남깁니다.
+- **한계**: DB 스크립트와 API 서버 코드는 이 저장소에 올리지 않았습니다. 평가 버튼은 화면에 없고, 부하·동시 접속은 확인하지 않았으며, 요청 제한·인증이 없어 외부에 공개하지 않았습니다.
+
 ## 에셋 출처
 
 - **마스코트(레서판다 픽셀 캐릭터)**: AI 픽셀아트 생성 서비스 [PixelLab](https://www.pixellab.ai)에서 직접 작성한 설명문으로 생성했습니다. 서비스 약관([Terms of Service](https://www.pixellab.ai/termsofservice), 2025-11-23 개정본) 1.3·3.3항에 따라 생성물의 저작권은 사용자에게 있으며 상업·비상업 용도로 허락 없이 사용할 수 있습니다. (생성물로 다른 AI 모델을 학습시키는 것은 금지되어 있습니다.) 원본 GIF와 사이트용 파일은 `public/mascot/` 에 있습니다.
