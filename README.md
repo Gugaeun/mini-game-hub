@@ -54,8 +54,9 @@ src/
   data/quiz.js           취향 문답 문항과 채점
   lib/*Engine.js         게임별 규칙·판정 로직 (화면과 분리, 테스트 가능)
   lib/recommend.js       문장 입력 기반 게임 추천 (키워드 매칭 / 서버리스 AI 연동)
+  lib/telemetry.js       (선택) 방문·추천·플레이 로그 전송 — 설정이 없으면 아무 일도 하지 않음
   pages/                 화면(홈, About, 추천, 게임별 페이지)
-  components/            Mascot, NavBar, 추천 패널·팝업 등
+  components/            Mascot, NavBar, 추천 패널·팝업, PlayTracker(플레이 시간 기록) 등
 public/
   games/                 기존 HTML/JS 게임 (iframe 으로 보여줌)
   mascot/                마스코트 도트 이미지
@@ -107,6 +108,26 @@ npm run deploy
 - **AI(LLM) 연동**: 서버리스 중계 함수 코드는 `serverless/` 에 작성되어 있습니다.
   **LLM API 키 발급과 배포는 아직 하지 않았고, 이후 진행 예정**입니다.
   연동하려면 `VITE_RECOMMEND_API_URL` 에 배포한 함수 주소를 설정합니다. 자세한 순서는 [serverless/README.md](serverless/README.md) 참고.
+
+## 사용 로그 연동 (선택 · 로컬 시연용)
+
+방문·추천·플레이 기록을 로컬 DB(Oracle 19c)에 남기는 기능입니다. **기본은 꺼져 있고**, `VITE_ARCADIA_LOG_URL` 을 설정했을 때만 동작합니다.
+배포본(GitHub Pages)에는 이 값이 없어서 로그를 보내지 않으며, 이전과 똑같이 동작합니다.
+
+켜는 방법: 프로젝트 루트에 `.env.local` 파일을 만들고 로컬 API 주소를 적은 뒤 `npm run dev` 를 실행합니다.
+(`*.local` 은 `.gitignore` 에 있어서 저장소에 올라가지 않습니다.)
+
+```
+VITE_ARCADIA_LOG_URL=http://127.0.0.1:3001
+```
+
+- **기록하는 것**: 접속(익명 키는 브라우저 localStorage), 첫 방문 팝업 열림·닫힘, 추천 요청과 결과, 게임 화면에 머문 시간, 게임 점수.
+  점수는 벽돌깨기·산성비·두더지잡기 3종만 보냅니다. 나머지 게임은 플레이 시간만 남습니다.
+- **추천 로직은 그대로**: 화면에 보여 주는 추천은 지금처럼 `recommend.js` 가 계산하고, 로그는 그 결과를 기록만 합니다.
+- **화면에 영향 없음**: 로그 전송은 실패해도(서버 꺼짐, 시간 초과 3초) 조용히 무시합니다.
+- **개인정보**: 입력한 문장은 서버가 해시와 글자 수만 저장합니다. 사용자는 익명 키로만 구분합니다.
+- **이 저장소에 없는 것**: 로그를 받는 API 서버와 DB 스크립트는 이 저장소에 포함되어 있지 않습니다. 로컬 시연용으로 따로 만들었고 외부에 공개하지 않습니다.
+  프런트는 `POST /api/session`, `/api/events`, `/api/recommend/log`, `/api/play`, `/api/play/end` 를 호출하므로, 이 주소를 구현한 서버가 있어야 로그가 쌓입니다. 저장소만으로는 로그 기능을 켤 수 없습니다.
 
 ## 에셋 출처
 
