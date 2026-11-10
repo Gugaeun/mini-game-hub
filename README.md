@@ -34,7 +34,7 @@
 | --- | --- | --- | --- |
 | 2048 | Puzzle | 기존 HTML/JS (iframe) | 완성 |
 | Memory Match | Puzzle | 기존 HTML/JS (iframe, 15단계) | 완성 |
-| Escape Game | Puzzle | 기존 HTML/JS (iframe) | 개발 중 |
+| FRACTURE (Escape Game) | Puzzle | 기존 HTML/JS (iframe) + 제한 시간·붕괴 연출, 픽셀아트 배경 | 개발 중 |
 | 슈팅 게임 | Action | React + Canvas | 완성 |
 | 벽돌깨기 | Action | React + Canvas | 완성 |
 | 리듬 게임 | Rhythm | React + Canvas + WebAudio 합성 음악 (6단계, 4단계부터 6레인) | 완성 |
@@ -123,5 +123,6 @@ npm run deploy
 ## 에셋 출처
 
 - **마스코트(레서판다 픽셀 캐릭터)**: AI 픽셀아트 생성 서비스 [PixelLab](https://www.pixellab.ai)에서 직접 작성한 설명문으로 생성했습니다. 서비스 약관([Terms of Service](https://www.pixellab.ai/termsofservice), 2025-11-23 개정본) 1.3·3.3항에 따라 생성물의 저작권은 사용자에게 있으며 상업·비상업 용도로 허락 없이 사용할 수 있습니다. (생성물로 다른 AI 모델을 학습시키는 것은 금지되어 있습니다.) 원본 GIF와 사이트용 파일은 `public/mascot/` 에 있습니다.
+- **FRACTURE(Escape Game) 배경 이미지**: 4개 방(신전·우주 정거장·마법사 저택·탐정 사무소)의 픽셀아트 배경은 ChatGPT(OpenAI)로 생성한 이미지를 사용했습니다. 파일은 `public/games/escape-game/assets/bg/` 에 있습니다.
 - **게임 효과음·음악**: 외부 파일 없이 WebAudio로 코드에서 합성합니다.
 - **폰트**: Google Fonts (Jua, Gothic A1, JetBrains Mono).

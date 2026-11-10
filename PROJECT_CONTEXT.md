@@ -20,9 +20,9 @@
 
 ## 게임 10개
 
-2048, Memory Match(15단계), Escape Game(개발 중), 슈팅, 벽돌깨기, 리듬(6단계·4단계부터 6레인), 산성비, 지뢰찾기, 오목(컴퓨터 대전 AI), 두더지잡기
+2048, Memory Match(15단계), FRACTURE(Escape Game, 개발 중), 슈팅, 벽돌깨기, 리듬(6단계·4단계부터 6레인), 산성비, 지뢰찾기, 오목(컴퓨터 대전 AI), 두더지잡기
 
-- **Escape Game**: 난이도별 제한 시간(쉬움 무제한 · 보통 5분 · 어려움 10분). 남은 시간 25% 이하 경고(균열), 10% 이하 위험(붉은 테두리·심장 소리), 0이 되면 화면이 무너지는 연출 후 "다시 도전". 시연용 단축키 **Shift+T**(누를 때마다 경고 → 위험 → 붕괴로 시간을 건너뜀). 코드는 `public/games/escape-game/fracture-collapse.js·css`.
+- **FRACTURE(Escape Game)**: 방 배경 4장은 ChatGPT로 만든 픽셀아트(`public/games/escape-game/assets/bg/`)이고, 오브젝트는 그림 위의 투명 클릭 영역(`fracture.css` 끝 블록)이다. 난이도별 제한 시간(쉬움 무제한 · 보통 5분 · 어려움 10분). 남은 시간 25% 이하 경고(균열), 10% 이하 위험(붉은 테두리·심장 소리), 0이 되면 화면이 무너지는 연출 후 "다시 도전". 시연용 단축키 **Shift+T**(누를 때마다 경고 → 위험 → 붕괴로 시간을 건너뜀). 코드는 `public/games/escape-game/fracture-collapse.js·css`.
 
 ## 추천 기능
 

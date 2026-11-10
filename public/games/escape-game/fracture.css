@@ -242,33 +242,25 @@ body {
 ═══════════════════════════════════════ */
 #log-overlay {
   position: absolute;
-  bottom: 100px; left: 50%; transform: translateX(-50%);
-  width: min(700px, 92vw);
-  background: #080808;
-  /* 픽셀 테두리: 4-corner notch */
-  border: 2px solid #333;
-  outline: 2px solid #000;
-  outline-offset: 2px;
-  clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
-  padding: 10px 14px 10px 18px;
-  color: #ddd;
+  top: 54px; left: 50%; transform: translateX(-50%);  /* 위쪽 중앙 — HUD 바로 아래 */
+  width: min(760px, 92vw);
+  background: none;               /* 글자 상자 없음 */
+  border: 0; outline: 0; clip-path: none;
+  padding: 0;
+  color: #f1e6c8;
+  text-align: center;
   z-index: 400;
-  min-height: 44px;
-  font-size: 1.08rem;
-  line-height: 1.6;
+  font-size: 1.15rem;
+  line-height: 1.45;
   font-family: 'Shilla', 'Courier New', monospace;
   letter-spacing: 0.5px;
+  text-shadow: 0 0 3px #000, 0 0 7px #000, 1px 1px 2px #000, -1px -1px 2px #000;  /* 상자가 없어도 읽히게 */
   pointer-events: none;
   transition: opacity 0.3s;
   opacity: 0;
   image-rendering: pixelated;
 }
-#log-overlay::before {
-  content: '▶';
-  position: absolute; left: 6px; top: 12px;
-  font-size: 0.65rem; color: var(--primary);
-  animation: log-blink 0.8s step-end infinite;
-}
+#log-overlay::before { display: none; }
 @keyframes log-blink { 50% { opacity: 0; } }
 #log-overlay.visible { opacity: 1; }
 
@@ -2592,3 +2584,100 @@ body {
   clip-path: polygon(0% 0%, 100% 0%, 80% 34%, 20% 34%);
   background: linear-gradient(to bottom, rgba(0,0,0,0.60), rgba(5,3,1,0.08));
 }
+
+/* ══ FRACTURE 일러스트 배경 (4개 스테이지) ══
+   ChatGPT가 만든 픽셀아트 방(assets/bg/bg-*.png)을 배경으로 쓴다. 물건이 그림에 이미 그려져 있으므로 각 .obj 는
+   그림 속 물건 위에 놓인 투명한 클릭 영역이다. 일부 요소(HTML 인라인 위치)는 !important 로 덮어쓴다.
+   퍼즐 단서·상태 표시(바닥 석판 글자, 두루마리, 에어록 불빛, 게시판 메모)는 그림 위에 그대로 살려 둔다. */
+/* ── temple ── */
+#scene-temple {
+  background: #05060a url('assets/bg/bg-temple.png') center / 100% 100% no-repeat;
+}
+#scene-temple > :not(.obj):not(.floor-inscription) { display: none !important; }
+#scene-temple #obj-pedestal { top: 370px !important; left: 184px !important; width: 137px !important; height: 154px !important; bottom: auto !important; right: auto !important; }
+#scene-temple #obj-skull { top: 457px !important; left: 338px !important; width: 59px !important; height: 67px !important; bottom: auto !important; right: auto !important; }
+#scene-temple #obj-door-temple { top: 339px !important; left: 440px !important; width: 149px !important; height: 180px !important; bottom: auto !important; right: auto !important; }
+#scene-temple #obj-mural { top: 136px !important; left: 545px !important; width: 184px !important; height: 165px !important; bottom: auto !important; right: auto !important; }
+#scene-temple #obj-stone-tablet { top: 129px !important; left: 732px !important; width: 73px !important; height: 103px !important; bottom: auto !important; right: auto !important; }
+#scene-temple #obj-explorer-note { top: 182px !important; left: 226px !important; width: 67px !important; height: 77px !important; bottom: auto !important; right: auto !important; }
+#scene-temple #obj-hanzi-note { top: 345px !important; left: 712px !important; width: 63px !important; height: 74px !important; bottom: auto !important; right: auto !important; }
+#scene-temple #obj-pedestal, #scene-temple #obj-skull, #scene-temple #obj-door-temple, #scene-temple #obj-mural, #scene-temple #obj-stone-tablet, #scene-temple #obj-explorer-note, #scene-temple #obj-hanzi-note {
+  background: none; border: 0; box-shadow: none; transform: none !important; filter: none; outline: 0;
+}
+#obj-pedestal > *, #obj-skull > *, #obj-door-temple > *, #obj-mural > *, #obj-stone-tablet > *, #obj-explorer-note > *, #obj-hanzi-note > * { display: none; }
+#scene-temple .obj:hover {
+  filter: none !important; transform: none !important;
+  background: rgba(255, 214, 120, 0.14) !important; outline: 1px solid rgba(255, 214, 120, 0.75) !important;
+}
+/* 바닥 석판 글자(퍼즐 단서): 새 바닥 그림 위에서 돌판에 새긴 글자처럼 은은하게 */
+#scene-temple .floor-inscription { color: #c9a24e !important; font-size: 0.8rem !important; letter-spacing: 2px; padding: 2px 10px; background: rgba(10, 6, 0, 0.45); border: 1px solid rgba(200, 160, 70, 0.28); text-shadow: 0 1px 0 #000; opacity: 0.85; z-index: 21; }
+
+/* ── space ── */
+#scene-space {
+  background: #05060a url('assets/bg/bg-space.png') center / 100% 100% no-repeat;
+}
+#scene-space > :not(.obj) { display: none !important; }
+#scene-space #obj-sparks { top: 186px !important; left: 142px !important; width: 101px !important; height: 96px !important; bottom: auto !important; right: auto !important; }
+#scene-space #obj-locker { top: 335px !important; left: 142px !important; width: 106px !important; height: 175px !important; bottom: auto !important; right: auto !important; }
+#scene-space #obj-console { top: 349px !important; left: 272px !important; width: 208px !important; height: 155px !important; bottom: auto !important; right: auto !important; }
+#scene-space #obj-airlock { top: 300px !important; left: 489px !important; width: 173px !important; height: 208px !important; bottom: auto !important; right: auto !important; }
+#scene-space #obj-datapad { top: 313px !important; left: 698px !important; width: 54px !important; height: 75px !important; bottom: auto !important; right: auto !important; }
+#scene-space #obj-wall-sticker { top: 212px !important; left: 363px !important; width: 57px !important; height: 71px !important; bottom: auto !important; right: auto !important; }
+#scene-space #obj-floor-sticker { top: 246px !important; left: 774px !important; width: 54px !important; height: 63px !important; bottom: auto !important; right: auto !important; }
+#scene-space #obj-sparks, #scene-space #obj-locker, #scene-space #obj-console, #scene-space #obj-airlock, #scene-space #obj-datapad, #scene-space #obj-wall-sticker, #scene-space #obj-floor-sticker {
+  background: none; border: 0; box-shadow: none; transform: none !important; filter: none; outline: 0;
+}
+#obj-sparks > *, #obj-locker > *, #obj-console > *, #obj-airlock > *, #obj-datapad > *, #obj-wall-sticker > *, #obj-floor-sticker > * { display: none; }
+#scene-space .obj:hover {
+  filter: none !important; transform: none !important;
+  background: rgba(64, 212, 230, 0.14) !important; outline: 1px solid rgba(64, 212, 230, 0.75) !important;
+}
+/* 에어록 불빛(.airlock-light)은 풀면 JS가 .green 으로 바꾸므로 살려 두고, 그림 속 빨간 불 위에 겹친다 */
+#obj-airlock .airlock-outer { background: none; border: 0; border-radius: 0; }
+#obj-airlock .airlock-inner { display: none; }
+#obj-airlock .airlock-light { top: 38%; left: 48%; width: 16px; height: 16px; z-index: 2; outline: 3px solid rgba(6, 20, 36, 0.95); }
+
+/* ── mansion ── */
+#scene-mansion {
+  background: #05060a url('assets/bg/bg-mansion.png') center / 100% 100% no-repeat;
+}
+#scene-mansion > :not(.obj):not(.scroll-prop) { display: none !important; }
+#scene-mansion #obj-mirror { top: 75px !important; left: 258px !important; width: 102px !important; height: 134px !important; bottom: auto !important; right: auto !important; }
+#scene-mansion #obj-portrait { top: 194px !important; left: 738px !important; width: 91px !important; height: 119px !important; bottom: auto !important; right: auto !important; }
+#scene-mansion #obj-secret-door { top: 300px !important; left: 455px !important; width: 144px !important; height: 221px !important; bottom: auto !important; right: auto !important; }
+#scene-mansion #obj-spellbook { top: 356px !important; left: 626px !important; width: 129px !important; height: 166px !important; bottom: auto !important; right: auto !important; }
+#scene-mansion #obj-ritual-table { top: 332px !important; left: 193px !important; width: 244px !important; height: 189px !important; bottom: auto !important; right: auto !important; }
+#scene-mansion #obj-crystals { top: 383px !important; left: 807px !important; width: 131px !important; height: 140px !important; bottom: auto !important; right: auto !important; }
+#scene-mansion #obj-mirror, #scene-mansion #obj-portrait, #scene-mansion #obj-secret-door, #scene-mansion #obj-spellbook, #scene-mansion #obj-ritual-table, #scene-mansion #obj-crystals {
+  background: none; border: 0; box-shadow: none; transform: none !important; filter: none; outline: 0;
+}
+#obj-mirror > *, #obj-portrait > *, #obj-secret-door > *, #obj-spellbook > *, #obj-ritual-table > *, #obj-crystals > * { display: none; }
+#scene-mansion .obj:hover {
+  filter: none !important; transform: none !important;
+  background: rgba(190, 130, 255, 0.14) !important; outline: 1px solid rgba(190, 130, 255, 0.75) !important;
+}
+/* 두루마리(퍼즐 단서)는 그림에 없어서 CSS 그대로 살려 두고, 문 앞 바닥에 놓는다 */
+#scene-mansion #obj-scroll { bottom: 56px !important; right: auto !important; left: calc(50% + 40px) !important; z-index: 21; }
+
+/* ── detective ── */
+#scene-detective {
+  background: #05060a url('assets/bg/bg-detective.png') center / 100% 100% no-repeat;
+}
+#scene-detective > :not(.obj) { display: none !important; }
+#scene-detective #obj-corkboard { top: 103px !important; left: 363px !important; width: 300px !important; height: 212px !important; bottom: auto !important; right: auto !important; }
+#scene-detective #obj-case-file { top: 193px !important; left: 201px !important; width: 80px !important; height: 98px !important; bottom: auto !important; right: auto !important; }
+#scene-detective #obj-typewriter { top: 358px !important; left: 190px !important; width: 144px !important; height: 144px !important; bottom: auto !important; right: auto !important; }
+#scene-detective #obj-phone { top: 362px !important; left: 353px !important; width: 85px !important; height: 99px !important; bottom: auto !important; right: auto !important; }
+#scene-detective #obj-safe { top: 362px !important; left: 784px !important; width: 126px !important; height: 136px !important; bottom: auto !important; right: auto !important; }
+#scene-detective #obj-newspaper { top: 390px !important; left: 511px !important; width: 73px !important; height: 85px !important; bottom: auto !important; right: auto !important; }
+#scene-detective #obj-floor-note { top: 395px !important; left: 658px !important; width: 73px !important; height: 91px !important; bottom: auto !important; right: auto !important; }
+#scene-detective #obj-corkboard, #scene-detective #obj-case-file, #scene-detective #obj-typewriter, #scene-detective #obj-phone, #scene-detective #obj-safe, #scene-detective #obj-newspaper, #scene-detective #obj-floor-note {
+  background: none; border: 0; box-shadow: none; transform: none !important; filter: none; outline: 0;
+}
+#obj-case-file > *, #obj-typewriter > *, #obj-phone > *, #obj-safe > *, #obj-newspaper > *, #obj-floor-note > * { display: none; }
+#scene-detective .obj:hover {
+  filter: none !important; transform: none !important;
+  background: rgba(255, 190, 110, 0.14) !important; outline: 1px solid rgba(255, 190, 110, 0.75) !important;
+}
+/* 수사 게시판: 그림은 액자로 쓰고, 단서 메모(JS가 채움)는 코르크 판 위에 그대로 보여준다 */
+#obj-corkboard .corkboard-bg { display: block !important; inset: 7% 5% 7% 5%; border: 0; background: #7a4f2c; }
