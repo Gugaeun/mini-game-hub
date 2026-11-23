@@ -24,7 +24,7 @@
 
 ### Escape Game (FRACTURE)
 
-네 개의 차원을 넘나드는 탈출 어드벤처입니다. (개발 중)
+네 개의 차원을 넘나드는 탈출 어드벤처입니다.
 
 ![Escape Game FRACTURE 시작 화면](docs/escape-game.png)
 
@@ -34,7 +34,7 @@
 | --- | --- | --- | --- |
 | 2048 | Puzzle | 기존 HTML/JS (iframe) | 완성 |
 | Memory Match | Puzzle | 기존 HTML/JS (iframe, 15단계) | 완성 |
-| FRACTURE (Escape Game) | Puzzle | 기존 HTML/JS (iframe) + 제한 시간·붕괴 연출, 픽셀아트 배경 | 개발 중 |
+| FRACTURE (Escape Game) | Puzzle | 기존 HTML/JS (iframe) + 제한 시간·붕괴 연출, 픽셀아트 배경 | 완성 |
 | 슈팅 게임 | Action | React + Canvas | 완성 |
 | 벽돌깨기 | Action | React + Canvas | 완성 |
 | 리듬 게임 | Rhythm | React + Canvas + WebAudio 합성 음악 (6단계, 4단계부터 6레인) | 완성 |
