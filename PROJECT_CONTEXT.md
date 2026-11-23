@@ -34,7 +34,7 @@
 ```bash
 npm install
 npm run dev      # http://localhost:5173/mini-game-hub/
-npm test         # 71건 (엔진 시뮬레이션 60 + 서버리스 11)
+npm test         # 74건 (엔진 시뮬레이션 63 + 서버리스 11)
 npm run deploy   # 빌드 후 gh-pages 브랜치로 배포
 ```
 

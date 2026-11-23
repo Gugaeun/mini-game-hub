@@ -38,7 +38,7 @@
 | 슈팅 게임 | Action | React + Canvas | 완성 |
 | 벽돌깨기 | Action | React + Canvas | 완성 |
 | 리듬 게임 | Rhythm | React + Canvas + WebAudio 합성 음악 (6단계, 4단계부터 6레인) | 완성 |
-| 산성비 | Typing | React + Canvas | 완성 |
+| 산성비 | Typing | React + Canvas (난이도 3단계, 일상/코딩 단어 선택) | 완성 |
 | 지뢰찾기 | Puzzle | React (DOM) | 완성 |
 | 오목 | Strategy | React + Canvas (컴퓨터 대전 AI) | 완성 |
 | 두더지잡기 | Casual | React (DOM) | 완성 |

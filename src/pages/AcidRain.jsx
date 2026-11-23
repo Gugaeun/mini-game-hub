@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { GROUND, H, W, WORD_H, createGame, step, submit, wordWidth } from '../lib/acidRainEngine'
+import {
+  DIFFICULTIES,
+  GROUND,
+  H,
+  W,
+  WORD_H,
+  WORD_SET_LABELS,
+  createGame,
+  step,
+  submit,
+  wordWidth,
+} from '../lib/acidRainEngine'
 import { useGameBasics } from '../lib/useGameBasics'
 
 const drops = Array.from({ length: 50 }, () => ({ x: Math.random() * W, y: Math.random() * H, v: 1.5 + Math.random() * 2.5 }))
@@ -71,6 +82,8 @@ export default function AcidRain() {
   const [value, setValue] = useState('')
   const [inputKey, setInputKey] = useState(0) // 바꾸면 입력창이 새로 만들어져 한글 조합 상태가 초기화된다
   const [hud, setHud] = useState(hudRef.current)
+  const [difficulty, setDifficulty] = useState('normal')
+  const [wordSet, setWordSet] = useState('daily')
 
   const clearInput = useCallback(() => {
     typedRef.current = ''
@@ -80,13 +93,14 @@ export default function AcidRain() {
 
   const start = useCallback(() => {
     ensureAudio()
-    gameRef.current = createGame()
-    hudRef.current = { score: 0, lives: 5, level: 1, combo: 0 }
+    const g = createGame(Math.random, { difficulty, wordSet })
+    gameRef.current = g
+    hudRef.current = { score: 0, lives: g.lives, level: 1, combo: 0 }
     setHud(hudRef.current)
     setNewRecord(false)
     clearInput()
     setPhase('playing')
-  }, [ensureAudio, clearInput, setPhase, setNewRecord])
+  }, [ensureAudio, clearInput, setPhase, setNewRecord, difficulty, wordSet])
 
   const togglePause = useCallback(() => {
     if (phaseRef.current === 'playing') setPhase('paused')
@@ -218,10 +232,40 @@ export default function AcidRain() {
               <h2 className="game-overlay-title">산성비</h2>
               <p>떨어지는 단어를 똑같이 입력해서 지우세요.</p>
               <p className="game-overlay-sub">바닥에 닿으면 목숨이 줄어요. 노란 단어를 지우면 화면 전체가 사라져요!</p>
+              <div className="rain-options" role="group" aria-label="난이도">
+                <span className="rain-options-label">난이도</span>
+                {Object.entries(DIFFICULTIES).map(([key, d]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`rain-chip${difficulty === key ? ' is-active' : ''}`}
+                    aria-pressed={difficulty === key}
+                    onClick={() => setDifficulty(key)}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+              <div className="rain-options" role="group" aria-label="단어 종류">
+                <span className="rain-options-label">단어</span>
+                {Object.entries(WORD_SET_LABELS).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`rain-chip${wordSet === key ? ' is-active' : ''}`}
+                    aria-pressed={wordSet === key}
+                    onClick={() => setWordSet(key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
               <button className="game-btn" onClick={start}>
                 시작하기
               </button>
-              <p className="game-overlay-sub">Enter로도 시작 · 한글 입력 상태로 플레이하세요</p>
+              <p className="game-overlay-sub">
+                Enter로도 시작 · {wordSet === 'code' ? '영문 입력 상태로' : '한글 입력 상태로'} 플레이하세요
+              </p>
             </div>
           )}
           {phase === 'paused' && (
@@ -240,8 +284,14 @@ export default function AcidRain() {
                 최종 점수 <strong>{hud.score}</strong> · LEVEL {hud.level}
               </p>
               {base.newRecord && <p className="game-record">★ 최고 기록 갱신!</p>}
+              <p className="game-overlay-sub">
+                {DIFFICULTIES[difficulty].label} · {WORD_SET_LABELS[wordSet]}
+              </p>
               <button className="game-btn" onClick={start}>
                 다시 시작
+              </button>
+              <button className="game-link" onClick={() => setPhase('menu')}>
+                난이도·단어 바꾸기
               </button>
             </div>
           )}

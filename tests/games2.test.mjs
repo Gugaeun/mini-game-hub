@@ -90,6 +90,49 @@ test('산성비: 8개 처치마다 레벨이 오르고 더 빨라지며, 오래 
   assert.ok(g2.words.every((w) => w.x >= 0 && w.x + rain.wordWidth(w.text) <= rain.W))
 })
 
+test('산성비: 난이도에 따라 목숨·속도·단어 간격이 달라지고, 기본값은 보통이다', () => {
+  assert.equal(rain.createGame(seeded(3)).difficulty, 'normal')
+  assert.equal(rain.createGame(seeded(3)).lives, 5)
+  assert.equal(rain.createGame(seeded(3), { difficulty: 'easy' }).lives, 7)
+  assert.equal(rain.createGame(seeded(3), { difficulty: 'hard' }).lives, 3)
+  assert.equal(rain.createGame(seeded(3), { difficulty: '없는값' }).difficulty, 'normal')
+  const easy = rain.levelParams(3, 'easy')
+  const normal = rain.levelParams(3)
+  const hard = rain.levelParams(3, 'hard')
+  assert.ok(easy.speed < normal.speed && normal.speed < hard.speed)
+  assert.ok(easy.spawnMs > normal.spawnMs && normal.spawnMs > hard.spawnMs)
+})
+
+test('산성비: 코딩 단어 모드는 영문 단어만 나오고, 일상 단어 모드는 기존처럼 한글만 나온다', () => {
+  const code = rain.createGame(seeded(7), { wordSet: 'code' })
+  const daily = rain.createGame(seeded(7))
+  assert.equal(daily.wordSet, 'daily')
+  for (const g of [code, daily]) {
+    g.spawnTimer = 0
+    for (let level = 1; level <= 9; level++) {
+      g.level = level
+      g.lives = 99
+      for (let i = 0; i < 40; i++) {
+        g.spawnTimer = 0
+        rain.step(g, 16)
+        g.words.length = Math.min(g.words.length, 6)
+      }
+    }
+  }
+  const spawnedAll = (g, re) => g.words.length > 0 && g.words.every((w) => re.test(w.text))
+  assert.ok(spawnedAll(code, /^[a-z]+$/), '코딩 단어는 소문자 영문')
+  assert.ok(spawnedAll(daily, /^[가-힣]+$/), '일상 단어는 한글')
+})
+
+test('산성비: 어려움·코딩 단어 조합도 오래 돌려도 오류가 없고, 영문 단어 상자는 화면 안에 들어온다', () => {
+  const g = rain.createGame(seeded(11), { difficulty: 'hard', wordSet: 'code' })
+  for (let i = 0; i < 60 * 40; i++) rain.step(g, 16.7)
+  assert.ok(g.phase === 'over' || g.words.length > 0)
+  assert.ok(g.words.every((w) => w.x >= 0 && w.x + rain.wordWidth(w.text) <= rain.W))
+  assert.ok(rain.wordWidth('const') < rain.wordWidth('하늘하늘하'), '영문 글자는 한글보다 좁게 계산')
+  assert.equal(rain.wordWidth('하늘'), 2 * 20 + 20, '한글 폭 계산은 기존과 같다')
+})
+
 // ---------------- 벽돌깨기 ----------------
 
 const IDLE = { left: false, right: false, fire: false, targetX: null }

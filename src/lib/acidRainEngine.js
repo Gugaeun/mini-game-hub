@@ -28,23 +28,54 @@ const POOLS = {
   ],
 }
 
-// 글자 수에 비례한 단어 상자 너비 (화면 쪽 그리기에서도 같은 값을 쓴다)
-export const wordWidth = (text) => text.length * 20 + 20
+// 코딩할 때 자주 쓰는 영문 단어 (소문자). 한글 단어와 섞으면 입력 전환이 번거로워서 따로 고른다.
+const CODE_POOLS = {
+  short: [
+    'var', 'let', 'int', 'for', 'if', 'map', 'key', 'api', 'css', 'git', 'npm', 'bug', 'set', 'url', 'dom', 'sql', 'tag', 'log',
+    'app', 'div', 'src', 'env', 'ssh', 'ui',
+  ],
+  medium: [
+    'const', 'class', 'array', 'async', 'await', 'break', 'while', 'state', 'props', 'hook', 'merge', 'push', 'pull', 'fetch',
+    'debug', 'route', 'style', 'token', 'stack', 'queue', 'float', 'print', 'input', 'react', 'build', 'error', 'event',
+  ],
+  long: [
+    'function', 'variable', 'return', 'import', 'export', 'boolean', 'object', 'string', 'branch', 'commit', 'compile', 'render',
+    'server', 'client', 'database', 'component', 'callback', 'promise', 'iterator', 'recursion', 'framework', 'javascript',
+    'repository', 'algorithm', 'interface', 'terminal',
+  ],
+}
+const WORD_SETS = { daily: POOLS, code: CODE_POOLS }
 
-export function levelParams(level) {
+// 난이도: 목숨 수 / 떨어지는 속도 배율 / 단어가 나오는 간격 배율 (보통 = 기존 규칙 그대로)
+export const DIFFICULTIES = {
+  easy: { label: '쉬움', lives: 7, speed: 0.8, spawn: 1.25 },
+  normal: { label: '보통', lives: 5, speed: 1, spawn: 1 },
+  hard: { label: '어려움', lives: 3, speed: 1.25, spawn: 0.8 },
+}
+export const WORD_SET_LABELS = { daily: '일상 단어', code: '코딩 단어' }
+
+// 단어 상자 너비 (화면 쪽 그리기에서도 같은 값을 쓴다). 한글은 20px, 영문·숫자는 12px 폭으로 계산.
+export const wordWidth = (text) => [...text].reduce((sum, ch) => sum + (ch.charCodeAt(0) > 127 ? 20 : 12), 20)
+
+export function levelParams(level, difficulty = 'normal') {
+  const d = DIFFICULTIES[difficulty] || DIFFICULTIES.normal
   return {
-    spawnMs: Math.max(750, 2300 - level * 170),
-    speed: Math.min(0.42 + 0.07 * level, 1.5),
+    spawnMs: Math.max(750, 2300 - level * 170) * d.spawn,
+    speed: Math.min(0.42 + 0.07 * level, 1.5) * d.speed,
   }
 }
 
-export function createGame(rng = Math.random) {
+export function createGame(rng = Math.random, options = {}) {
+  const difficulty = DIFFICULTIES[options.difficulty] ? options.difficulty : 'normal'
+  const wordSet = WORD_SETS[options.wordSet] ? options.wordSet : 'daily'
   return {
     rng,
+    difficulty,
+    wordSet,
     phase: 'playing', // 'playing' | 'over'
     time: 0,
     score: 0,
-    lives: 5,
+    lives: DIFFICULTIES[difficulty].lives,
     level: 1,
     killed: 0,
     combo: 0,
@@ -60,11 +91,12 @@ export function createGame(rng = Math.random) {
 function pickText(s) {
   const r = s.rng()
   const lv = s.level
+  const P = WORD_SETS[s.wordSet] || POOLS
   const pool =
-    lv <= 2 ? POOLS.short
-    : lv <= 4 ? (r < 0.65 ? POOLS.medium : POOLS.short)
-    : lv <= 7 ? (r < 0.5 ? POOLS.medium : r < 0.85 ? POOLS.long : POOLS.short)
-    : r < 0.7 ? POOLS.long : POOLS.medium
+    lv <= 2 ? P.short
+    : lv <= 4 ? (r < 0.65 ? P.medium : P.short)
+    : lv <= 7 ? (r < 0.5 ? P.medium : r < 0.85 ? P.long : P.short)
+    : r < 0.7 ? P.long : P.medium
 
   for (let i = 0; i < 12; i++) {
     const text = pool[Math.floor(s.rng() * pool.length)]
@@ -74,7 +106,7 @@ function pickText(s) {
 }
 
 function spawn(s) {
-  const params = levelParams(s.level)
+  const params = levelParams(s.level, s.difficulty)
   const text = pickText(s)
   const width = wordWidth(text)
   const gold = s.killed >= 5 && !s.words.some((w) => w.gold) && s.rng() < 0.08
@@ -107,7 +139,7 @@ export function step(s, dtMs) {
   s.spawnTimer -= dt
   if (s.spawnTimer <= 0) {
     spawn(s)
-    s.spawnTimer = levelParams(s.level).spawnMs * (0.7 + s.rng() * 0.6)
+    s.spawnTimer = levelParams(s.level, s.difficulty).spawnMs * (0.7 + s.rng() * 0.6)
   }
 
   s.words.forEach((w) => (w.y += w.speed * f))

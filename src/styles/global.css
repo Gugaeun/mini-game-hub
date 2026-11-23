@@ -816,6 +816,42 @@ button.quiz-cta:disabled {
   opacity: 0.85;
 }
 
+/* 산성비 시작 화면: 난이도 / 단어 종류 선택 */
+.rain-options {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rain-options-label {
+  font-size: 13px;
+  color: #a89bc4;
+  min-width: 52px;
+}
+
+.rain-chip {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #d8cff0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.rain-chip:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.rain-chip.is-active {
+  color: #fff;
+  background: var(--accent-magenta);
+  border-color: transparent;
+}
+
 .game-link {
   font-family: var(--font-mono);
   font-size: 13px;
