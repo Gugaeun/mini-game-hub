@@ -43,6 +43,14 @@ export function useGameBasics(bestKey) {
     setMutedState(mutedRef.current)
   }, [])
 
+  // 저장 키가 바뀌면(예: 산성비 난이도 변경) 그 키의 최고 기록을 다시 읽는다.
+  useEffect(() => {
+    const saved = readBest(bestKey)
+    bestRef.current = saved
+    setBest(saved)
+    setNewRecord(false)
+  }, [bestKey])
+
   const saveBest = useCallback(
     (score) => {
       if (score <= bestRef.current) return

@@ -76,14 +76,17 @@ export default function AcidRain() {
   const inputRef = useRef(null)
   const typedRef = useRef('')
   const hudRef = useRef({ score: 0, lives: 5, level: 1, combo: 0 })
-  const base = useGameBasics('arcadia_acidrain_best')
+  const [difficulty, setDifficulty] = useState('normal')
+  const [wordSet, setWordSet] = useState('daily')
+  // 최고 기록은 난이도별로 따로 저장한다. 보통은 예전 키를 그대로 써서 기존 기록이 이어진다.
+  const base = useGameBasics(
+    difficulty === 'normal' ? 'arcadia_acidrain_best' : `arcadia_acidrain_best_${difficulty}`,
+  )
   const { phase, phaseRef, setPhase, play, saveBest, ensureAudio, setNewRecord } = base
 
   const [value, setValue] = useState('')
   const [inputKey, setInputKey] = useState(0) // 바꾸면 입력창이 새로 만들어져 한글 조합 상태가 초기화된다
   const [hud, setHud] = useState(hudRef.current)
-  const [difficulty, setDifficulty] = useState('normal')
-  const [wordSet, setWordSet] = useState('daily')
 
   const clearInput = useCallback(() => {
     typedRef.current = ''
